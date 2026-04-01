@@ -16,17 +16,17 @@ CHALLENGES = {
 
 CREATORS = [
     {
-        "username": "admin",
-        "name": "R3dex Admin",
+        "username": "r3dex",
+        "name": "Karthik",
         "profile_link": "https://github.com/karthikparambil",
-        "bio": "CTF Enthusiast and Lead Developer.",
+        "bio": "Pentester, CTF Enthusiast and Developer.",
         "challenges": ["Omni", "Spectre"]
     },
     {
-        "username": "0xHUB_Admin",
-        "name": "0xHUB Admin",
-        "profile_link": "https://twitter.com/0xHUB",
-        "bio": "Security researcher and creator of network challenges.",
+        "username": "mxshub",
+        "name": "Mushab",
+        "profile_link": "https://github.com/MuhammadMushab",
+        "bio": "Security researcher and creator of crypto challenges.",
         "challenges": ["Cloud-Break", "Kernel-Panic"]
     }
 ]
