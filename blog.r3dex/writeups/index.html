@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTF Writeups | R3dex Blog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=IBM+Plex+Mono:wght@300;400;500;700&family=IBM+Plex+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --black: #0c0c0c;
+            --off: #121212;
+            --grey1: #1a1a1a;
+            --grey3: #2a2a2a;
+            --line: rgba(255, 255, 255, 0.08);
+            --line2: rgba(255, 255, 255, 0.15);
+            --muted: #888888;
+            --body: #dddddd;
+            --white: #ffffff;
+            --red: #ff3b4b;
+            --ease: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--black);
+            color: var(--body);
+            font-family: 'IBM Plex Sans', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            padding: 2rem 4rem;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: 0.3s;
+        }
+
+        /* ─── HEADER ─── */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4rem;
+        }
+
+        .nav-left a {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .nav-left a:hover {
+            color: var(--white);
+        }
+
+        .search-container {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--line2);
+            border-radius: 8px;
+            padding: 0.6rem 1rem 0.6rem 2.5rem;
+            color: var(--white);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            pointer-events: none;
+        }
+
+        /* ─── LAYOUT ─── */
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 4rem;
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        /* ─── WRITEUP CARDS ─── */
+        .writeup-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .writeup-card {
+            display: grid;
+            grid-template-columns: 1fr 240px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--line2);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.4s var(--ease), border-color 0.4s var(--ease), background 0.4s var(--ease), opacity 0.4s var(--ease), filter 0.4s var(--ease);
+            cursor: pointer;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .writeup-card.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+            position: absolute; /* Take out of flow to prevent gaps */
+            visibility: hidden;
+        }
+
+        .writeup-card:hover {
+            border-color: var(--red);
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateY(-4px) scale(1.01);
+        }
+
+        .card-content {
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .card-content h2 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 1.4rem;
+            color: var(--white);
+        }
+
+        .card-content p {
+            font-size: 1rem;
+            color: var(--muted);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-meta {
+            display: flex;
+            gap: 1.5rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--muted);
+            align-items: center;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .meta-item i {
+            color: var(--red);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--grey1);
+        }
+
+        .card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+            transition: 0.5s;
+        }
+
+        .writeup-card:hover .card-img img {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        /* ─── SIDEBAR ─── */
+        aside {
+            display: flex;
+            flex-direction: column;
+            gap: 4rem;
+        }
+
+        .sidebar-section h3 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--white);
+            margin-bottom: 2rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .sidebar-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 30px;
+            height: 2px;
+            background: var(--red);
+        }
+
+        .recent-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .recent-list a {
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .recent-list a:hover {
+            color: var(--red);
+        }
+
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .tag {
+            background: var(--grey1);
+            border: 1px solid var(--line2);
+            border-radius: 6px;
+            padding: 0.4rem 0.8rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--muted);
+            transition: 0.3s;
+        }
+
+        .tag:hover {
+            border-color: var(--red);
+            color: var(--white);
+            background: rgba(255, 59, 75, 0.1);
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 1000px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            body {
+                padding: 2rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .writeup-card {
+                grid-template-columns: 1fr;
+            }
+            .card-img {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="nav-left">
+            <a href="../index.html">Home</a>
+        </div>
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" placeholder="Search...">
+        </div>
+    </header>
+
+    <div class="container">
+        <main class="writeup-list" id="writeup-list">
+            <!-- Card: Jack of All Trades -->
+            <a href="jack-of-all-trades/index.html" class="writeup-card" data-tags="web,stego,bruteforce,privesc">
+                <div class="card-content">
+                    <h2>TryHackMe: Jack of All Trades</h2>
+                    <p>A medium boot-to-root room involving port enumeration (swapped HTTP/SSH), steganography, command injection, and SUID privilege escalation.</p>
+                    <div class="card-meta">
+                        <div class="meta-item">📂 TryHackMe</div>
+                    </div>
+                </div>
+                <div class="card-img">
+                    <img src="assets/jack_of_all_trades.png" alt="Jack of All Trades Lab">
+                </div>
+            </a>
+
+            <!-- Card: Easy Peasy -->
+            <a href="easy-peasy/index.html" class="writeup-card" data-tags="web,hash,stego,privesc">
+                <div class="card-content">
+                    <h2>TryHackMe: Easy Peasy</h2>
+                    <p>A concise CTF room covering nmap/gobuster enumeration, hash cracking, steganography, and cron job privilege escalation to root.</p>
+                    <div class="card-meta">
+                        <div class="meta-item">📂 TryHackMe</div>
+                    </div>
+                </div>
+                <div class="card-img">
+                    <img src="assets/easy_peasy.png" alt="Easy Peasy Lab">
+                </div>
+            </a>
+
+            <!-- Card: Brooklyn Nine Nine -->
+            <a href="brooklyn-nine-nine/index.html" class="writeup-card" data-tags="ftp,ssh,stego,bruteforce,web">
+                <div class="card-content">
+                    <h2>TryHackMe: Brooklyn Nine Nine</h2>
+                    <p>A B99 themed CTF where we extracted credentials via steganography, brute-forced SSH, and escalated to root using sudo privileges on less/nano.</p>
+                    <div class="card-meta">
+                        <div class="meta-item">📂 TryHackMe</div>
+                    </div>
+                </div>
+                <div class="card-img">
+                    <img src="assets/Brooklyn_Nine_Nine.jpeg" alt="Brooklyn Nine Nine Lab">
+                </div>
+            </a>
+
+            <!-- Card: Anonymous -->
+            <a href="anonymous/index.html" class="writeup-card" data-tags="ftp,cron,lxd,privesc">
+                <div class="card-content">
+                    <h2>TryHackMe: Anonymous</h2>
+                    <p>Exploited a writable FTP share and a recurring cron job to gain initial access, then escalated privileges to root using LXD containers.</p>
+                    <div class="card-meta">
+                        <div class="meta-item">📂 TryHackMe</div>
+                    </div>
+                </div>
+                <div class="card-img">
+                    <img src="assets/anonymous.png" alt="Anonymous Lab">
+                </div>
+            </a>
+        </main>
+
+        <aside>
+            <div class="sidebar-section">
+                <h3>Recently Updated</h3>
+                <ul class="recent-list">
+                    <li><a href="jack-of-all-trades/index.html">TryHackMe: Jack of All Trades</a></li>
+                    <li><a href="easy-peasy/index.html">TryHackMe: Easy Peasy</a></li>
+                    <li><a href="brooklyn-nine-nine/index.html">TryHackMe: Brooklyn Nine Nine</a></li>
+                    <li><a href="anonymous/index.html">TryHackMe: Anonymous</a></li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Trending Tags</h3>
+                <div class="tag-cloud" id="tag-cloud">
+                    <a href="#" class="tag" data-filter="web">web</a>
+                    <a href="#" class="tag" data-filter="hash">hash</a>
+                    <a href="#" class="tag" data-filter="forensics">forensics</a>
+                    <a href="#" class="tag" data-filter="stego">stego</a>
+                    <a href="#" class="tag" data-filter="ssh">ssh</a>
+                    <a href="#" class="tag" data-filter="bruteforce">bruteforce</a>
+                    <a href="#" class="tag" data-filter="privesc">privesc</a>
+                    <a href="#" class="tag" data-filter="windows">windows</a>
+                    <a href="#" class="tag" data-filter="pcap">pcap</a>
+                    <a href="#" class="tag" data-filter="active-directory">active-directory</a>
+                    <a href="#" class="tag" data-filter="all" style="color: var(--white); border-color: var(--red);">all</a>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        const searchInput = document.querySelector('.search-input');
+        const cards = document.querySelectorAll('.writeup-card');
+        const tags = document.querySelectorAll('.tag');
+        const listContainer = document.getElementById('writeup-list');
+        let activeFilters = []; // Array to store multiple active filters
+
+        function filterCards() {
+            const query = searchInput.value.toLowerCase().trim();
+
+            cards.forEach(card => {
+                const title = card.querySelector('h2').textContent.toLowerCase();
+                const desc = card.querySelector('p').textContent.toLowerCase();
+                const cardTags = card.dataset.tags.split(',');
+                
+                const matchesSearch = title.includes(query) || desc.includes(query);
+                
+                // Matches if no filters are selected (all) OR if the card has ALL active filters
+                const matchesTags = activeFilters.length === 0 || 
+                                   activeFilters.every(filter => cardTags.includes(filter));
+
+                if (matchesSearch && matchesTags) {
+                    card.classList.remove('hidden');
+                    card.style.position = 'relative';
+                    card.style.visibility = 'visible';
+                    card.style.display = 'grid';
+                } else {
+                    card.classList.add('hidden');
+                    setTimeout(() => {
+                        if (card.classList.contains('hidden')) {
+                            card.style.display = 'none';
+                        }
+                    }, 400);
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', filterCards);
+
+        tags.forEach(tag => {
+            tag.addEventListener('click', (e) => {
+                e.preventDefault();
+                const filter = tag.dataset.filter;
+
+                if (filter === 'all') {
+                    activeFilters = [];
+                    tags.forEach(t => t.classList.remove('active'));
+                    // Reset styling for all tags
+                    tags.forEach(t => {
+                        t.style.borderColor = 'var(--line2)';
+                        t.style.color = 'var(--muted)';
+                        t.style.background = 'transparent';
+                    });
+                    // Highlight 'all' tag
+                    tag.style.borderColor = 'var(--red)';
+                    tag.style.color = 'var(--white)';
+                    tag.style.background = 'rgba(255, 59, 75, 0.1)';
+                } else {
+                    // Remove highlight from 'all'
+                    const allTag = document.querySelector('.tag[data-filter="all"]');
+                    allTag.style.borderColor = 'var(--line2)';
+                    allTag.style.color = 'var(--muted)';
+                    allTag.style.background = 'transparent';
+
+                    if (activeFilters.includes(filter)) {
+                        activeFilters = activeFilters.filter(f => f !== filter);
+                        tag.style.borderColor = 'var(--line2)';
+                        tag.style.color = 'var(--muted)';
+                        tag.style.background = 'transparent';
+                    } else {
+                        activeFilters.push(filter);
+                        tag.style.borderColor = 'var(--red)';
+                        tag.style.color = 'var(--white)';
+                        tag.style.background = 'rgba(255, 59, 75, 0.1)';
+                    }
+                    
+                    // If no filters left, highlight 'all'
+                    if (activeFilters.length === 0) {
+                        allTag.style.borderColor = 'var(--red)';
+                        allTag.style.color = 'var(--white)';
+                        allTag.style.background = 'rgba(255, 59, 75, 0.1)';
+                    }
+                }
+                
+                listContainer.style.opacity = '0.5';
+                setTimeout(() => {
+                    filterCards();
+                    listContainer.style.opacity = '1';
+                }, 100);
+            });
+        });
+
+        listContainer.style.transition = 'opacity 0.3s ease';
+    </script>
+</body>
+
+</html>

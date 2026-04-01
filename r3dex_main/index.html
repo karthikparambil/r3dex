@@ -1,0 +1,2730 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R3dex</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=IBM+Plex+Mono:wght@300;400;500;700&family=IBM+Plex+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ─── TOKENS ─────────────────────────────────────────────── */
+        :root {
+            /* ── Core palette (practice.html theme) ── */
+            --black: #121212;
+            --off:   #1a1a1a;
+            --grey1: #222222;
+            --grey2: #2a2a2a;
+            --grey3: #363636;
+            --line:  rgba(255,255,255,0.2);
+            --line2: rgba(255,255,255,0.3);
+            --muted: #bbbbbb;
+            --body:  #ffffff;
+            --white: #ffffff;
+            --red:   #ff3b4b;
+            --red2:  #ff5e6d;
+            --green: #4ade80;
+            --yellow:#fbbf24;
+            --blue:  #60a5fa;
+            --purple:#c084fc;
+            --orange:#fb923c;
+            --ease:  cubic-bezier(0.16, 1, 0.3, 1);
+
+            /* ── Legacy aliases so existing colour references still work ── */
+            --ink:    var(--black);
+            --ink2:   var(--off);
+            --ink3:   var(--grey1);
+            --surface:var(--grey2);
+            --head:   var(--white);
+            --g:      var(--red);    /* accent green → red  */
+            --c:      var(--red2);   /* accent cyan  → red2 */
+            --r:      var(--red);
+            --y:      var(--yellow);
+            --p:      var(--purple);
+            --g-dim:  rgba(255,59,75,0.14);
+            --c-dim:  rgba(255,94,109,0.14);
+            --easing: var(--ease);
+            --ease-out: var(--ease);
+
+            /* ── Roadmap section extras ── */
+            --roadmap-bg:      #0a0a0a;
+            --roadmap-bg2:     #111111;
+            --roadmap-surface: #161616;
+            --roadmap-surface2:#1c1c1c;
+            --roadmap-border:  #2a2a2a;
+            --roadmap-text:    #dddddd;
+            --roadmap-muted:   #888888;
+            --accent-cyan:     var(--blue);
+            --accent-green:    var(--green);
+            --accent-red:      var(--red);
+            --accent-yellow:   var(--yellow);
+            --accent-purple:   var(--purple);
+            --accent-orange:   var(--orange);
+            --glow-cyan:    0 0 8px #60a5fa55, 0 0 20px #60a5fa22, 0 0 40px #60a5fa11;
+            --glow-green:   0 0 8px #4ade8055, 0 0 20px #4ade8022, 0 0 40px #4ade8011;
+            --glow-red:     0 0 8px #ff3b4b55, 0 0 20px #ff3b4b22, 0 0 40px #ff3b4b11;
+            --glow-yellow:  0 0 8px #fbbf2455, 0 0 20px #fbbf2422, 0 0 40px #fbbf2411;
+            --glow-purple:  0 0 8px #c084fc55, 0 0 20px #c084fc22, 0 0 40px #c084fc11;
+            --glow-orange:  0 0 8px #fb923c55, 0 0 20px #fb923c22, 0 0 40px #fb923c11;
+        }
+
+        /* ─── RESET ──────────────────────────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            background: var(--black);
+            color: var(--body);
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 16px;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        img {
+            display: block;
+        }
+
+        /* ─── NOISE TEXTURE ──────────────────────────────────────── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+            opacity: 0.018;
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        /* ─── SCROLLBAR ──────────────────────────────────────────── */
+        ::-webkit-scrollbar {
+            width: 2px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--black);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--red);
+        }
+
+        /* ─── NAV ────────────────────────────────────────────────── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 4rem;
+            height: 64px;
+            background: rgba(8, 8, 8, 0.92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--line2);
+        }
+
+        .nav-logo {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 800;
+            font-size: 1.15rem;
+            color: var(--white);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        @keyframes breathe {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: .4;
+                transform: scale(0.7);
+            }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--g);
+        }
+
+        .nav-cta {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--g);
+            border: 1px solid rgba(255, 0, 0, 0.678);
+            padding: 0.5rem 1.2rem;
+            transition: all 0.3s var(--ease-out);
+            position: relative;
+            overflow: hidden;
+            border-radius: 0px;
+        }
+
+        .nav-cta::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+            transition: none;
+        }
+
+        .nav-cta:hover {
+            background: var(--g-dim);
+            border-color: var(--g);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(61, 255, 192, 0.15);
+        }
+
+        .nav-cta:hover::after {
+            left: 100%;
+            transition: 0.6s;
+        }
+
+        /* ─── REVEAL ANIMATIONS ──────────────────────────────────── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
+        }
+
+        .reveal.up {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-delay-1 {
+            transition-delay: 0.1s;
+        }
+
+        .reveal-delay-2 {
+            transition-delay: 0.2s;
+        }
+
+        .reveal-delay-3 {
+            transition-delay: 0.3s;
+        }
+
+        .reveal-delay-4 {
+            transition-delay: 0.4s;
+        }
+
+        .reveal-delay-5 {
+            transition-delay: 0.5s;
+        }
+
+        .reveal-delay-6 {
+            transition-delay: 0.6s;
+        }
+
+        /* ─── SECTION WRAPPER ────────────────────────────────────── */
+        .wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 4rem;
+        }
+
+        /* ─── SECTION LABEL ──────────────────────────────────────── */
+        .label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.68rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--g);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1.2rem;
+        }
+
+        .label::before {
+            content: '';
+            width: 24px;
+            height: 1px;
+            background: var(--g);
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 900;
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            color: var(--white);
+            line-height: 1;
+            letter-spacing: -1.5px;
+            text-transform: uppercase;
+        }
+
+        .section-title .hl {
+            color: transparent;
+            -webkit-text-stroke: 1.5px var(--red);
+        }
+
+        .section-sub {
+            font-size: 1rem;
+            color: var(--muted);
+            line-height: 1.75;
+            max-width: 500px;
+            margin-top: 0.75rem;
+        }
+
+        /* ─── DIVIDER ────────────────────────────────────────────── */
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: var(--line);
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════════════════════ */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Ambient gradient blob */
+        .hero-blob {
+            position: absolute;
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(61, 255, 192, 0.05) 0%, transparent 65%);
+            top: -100px;
+            left: -200px;
+            pointer-events: none;
+            animation: blobDrift 12s ease-in-out infinite alternate;
+        }
+
+        .hero-blob2 {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.04) 0%, transparent 65%);
+            bottom: -100px;
+            right: -100px;
+            pointer-events: none;
+            animation: blobDrift2 15s ease-in-out infinite alternate;
+        }
+
+        @keyframes blobDrift {
+            to {
+                transform: translate(60px, 40px);
+            }
+        }
+
+        @keyframes blobDrift2 {
+            to {
+                transform: translate(-40px, -60px);
+            }
+        }
+
+        /* Dot grid */
+        .hero-dots {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+            background-size: 36px 36px;
+            pointer-events: none;
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .hero-eyebrow {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--g);
+            margin-bottom: 1.8rem;
+            opacity: 0;
+            animation: fadeSlide 1s var(--ease-out) 0.2s forwards;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hero-eyebrow span {
+            display: inline-block;
+            width: 30px;
+            height: 1px;
+            background: var(--g);
+        }
+
+        .hero-title {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 800;
+            font-size: clamp(3rem, 7vw, 6.5rem);
+            color: var(--white);
+            line-height: 1.0;
+            letter-spacing: -0.03em;
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeSlide 1s var(--ease-out) 0.4s forwards;
+        }
+
+        .hero-title em {
+            font-style: normal;
+            color: transparent;
+            -webkit-text-stroke: 1.5px var(--g);
+            opacity: 0.7;
+        }
+
+        .hero-desc {
+            font-size: 1.1rem;
+            color: var(--body);
+            line-height: 1.8;
+            max-width: 480px;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeSlide 1s var(--ease-out) 0.6s forwards;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            opacity: 0;
+            animation: fadeSlide 1s var(--ease-out) 0.8s forwards;
+        }
+
+        .btn {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.76rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 1rem 2.4rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            cursor: pointer;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0px;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: none;
+        }
+
+        .btn:hover::after {
+            left: 100%;
+            transition: 0.7s;
+        }
+
+        .btn:hover {
+            transform: translateY(-4px);
+        }
+
+        .btn-fill {
+            background: var(--g);
+            color: var(--ink);
+            font-weight: 600;
+        }
+
+        .btn-fill:hover {
+            background: rgb(88, 255, 202);
+            box-shadow:
+                0 15px 35px rgba(61, 255, 192, 0.3),
+                0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--body);
+            border: 1px solid var(--line2);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--g);
+            color: var(--g);
+            background: rgba(61, 255, 192, 0.04);
+            box-shadow: 0 10px 25px rgba(61, 255, 192, 0.1);
+        }
+
+        /* Hero stats */
+        .hero-stats {
+            position: absolute;
+            bottom: 4rem;
+            right: 4rem;
+            display: flex;
+            gap: 3rem;
+            opacity: 0;
+            animation: fadeSlide 1s var(--ease-out) 1.2s forwards;
+            z-index: 2;
+        }
+
+        .hstat-num {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            color: var(--head);
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+
+        .hstat-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* Scroll indicator */
+        .scroll-hint {
+            position: absolute;
+            bottom: 4rem;
+            left: 4rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--muted);
+            opacity: 0;
+            animation: fadeSlide 1s var(--ease-out) 1.4s forwards;
+            z-index: 2;
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--g), transparent);
+            animation: scrollDrop 2s ease-in-out infinite;
+        }
+
+        @keyframes scrollDrop {
+
+            0%,
+            100% {
+                transform: scaleY(1);
+                opacity: .6;
+            }
+
+            50% {
+                transform: scaleY(0.5);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+   MARQUEE TICKER
+═══════════════════════════════════════════════════════════ */
+        .ticker {
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+            overflow: hidden;
+            padding: 0.9rem 0;
+            background: var(--ink2);
+        }
+
+        .ticker-track {
+            display: flex;
+            gap: 4rem;
+            width: max-content;
+            animation: tickerScroll 30s linear infinite;
+        }
+
+        .ticker-track:hover {
+            animation-play-state: paused;
+        }
+
+        .ticker-item {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .ticker-item .dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--g);
+            flex-shrink: 0;
+        }
+
+        @keyframes tickerScroll {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+   HUB — NAV CARDS
+═══════════════════════════════════════════════════════════ */
+        .hub-section {
+            padding: 8rem 0;
+        }
+
+        .hub-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+            background: transparent;
+            border: none;
+            margin-top: 4rem;
+        }
+
+        .hub-card {
+            background: var(--ink2);
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            display: block;
+            border-radius: 20px;
+            border: none;
+            box-shadow:
+                8px 8px 18px rgba(0, 0, 0, 0.55),
+                -4px -4px 12px rgba(255, 255, 255, 0.04);
+            transition: box-shadow 0.3s var(--ease-out), transform 0.3s var(--ease-out);
+        }
+
+        .hub-card-inner {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hub-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hub-card::after {
+            content: '';
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            right: 1px;
+            height: 40%;
+            border-radius: 20px 20px 60% 60% / 20px 20px 30px 30px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.055) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .hub-card:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                12px 12px 28px rgba(0, 0, 0, 0.6),
+                -5px -5px 16px rgba(255, 255, 255, 0.05),
+                inset 0 0 0 1px var(--card-accent, rgba(0, 255, 178, 0.2));
+        }
+
+                /* ═══════════════════════════
+       SECTION: PATH DEEP DIVE
+    ════════════════════════════ */
+        .paths-sec {
+            padding: 8rem 0;
+            background: var(--off);
+            border-bottom: 1px solid var(--line2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .paths-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--line2);
+            border: 1px solid var(--line2);
+            margin-top: 4rem;
+        }
+
+        .path-deep {
+            background: var(--off);
+            padding: 3rem;
+            transition: background .22s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .path-deep:hover {
+            background: var(--grey1)
+        }
+
+        .path-deep::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--dc, var(--red));
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform .4s var(--ease);
+        }
+
+        .path-deep:hover::after {
+            transform: scaleY(1)
+        }
+
+        .pd-num {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 900;
+            font-size: 5rem;
+            letter-spacing: -3px;
+            color: var(--grey2);
+            line-height: 1;
+            position: absolute;
+            bottom: 1rem;
+            right: 1.5rem;
+            pointer-events: none;
+            transition: color .3s;
+        }
+
+        .path-deep:hover .pd-num {
+            color: var(--grey3)
+        }
+
+        .pd-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.76rem;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: var(--dc, var(--red));
+            margin-bottom: 1.2rem;
+        }
+
+        .pd-title {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 900;
+            font-size: 2.2rem;
+            letter-spacing: -1px;
+            color: var(--white);
+            line-height: 1;
+            margin-bottom: 1.2rem;
+        }
+
+        .pd-desc {
+            font-size: 0.97rem;
+            color: var(--muted);
+            line-height: 1.85;
+            max-width: 420px;
+            margin-bottom: 2rem;
+        }
+
+        .pd-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 2.5rem
+        }
+
+        .pd-list li {
+            display: grid;
+            grid-template-columns: 20px 1fr;
+            gap: 10px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.82rem;
+            color: var(--body);
+            line-height: 1.5;
+            align-items: start;
+        }
+
+        .pd-list li span:first-child {
+            color: var(--dc, var(--red));
+            opacity: .7;
+            text-align: center;
+        }
+
+        .pd-cta {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.82rem;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            padding: .85rem 1.8rem;
+            background: var(--dc, var(--red));
+            color: var(--white);
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all .22s var(--ease);
+        }
+
+        .pd-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(229, 0, 31, .25)
+        }
+        /* ═══════════════════════════════════════════════════════════
+   ROADMAP (INTEGRATED FROM CYBERSECURITY-ROADMAP)
+═══════════════════════════════════════════════════════════ */
+        .roadmap-section {
+            padding: 8rem 0;
+            background: var(--ink);
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes roadmap-scanline {
+            0% {
+                top: 0;
+            }
+
+            100% {
+                top: 100%;
+            }
+        }
+
+        .roadmap-integration {
+            position: relative;
+            z-index: 2;
+        }
+
+        .roadmap-header {
+            margin-bottom: 4rem;
+        }
+
+        /* STATUS BAR */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            justify-content: flex-start;
+            margin-top: 28px;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--roadmap-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            box-shadow: 0 0 6px var(--accent-green);
+            animation: pulse-node 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-node {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* ROADMAP TRACK */
+        .roadmap {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        /* Central spine */
+        .roadmap::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: linear-gradient(to bottom,
+                    transparent 0%,
+                    var(--roadmap-border) 5%,
+                    var(--roadmap-border) 95%,
+                    transparent 100%);
+            transform: translateX(-50%);
+            z-index: 0;
+        }
+
+        /* PHASE ROW */
+        .phase {
+            display: grid;
+            grid-template-columns: 1fr 64px 1fr;
+            align-items: start;
+            gap: 0;
+            position: relative;
+            margin-bottom: 48px;
+            opacity: 0;
+            transform: translateY(24px);
+            animation: roadmap-fadeUp 0.5s ease forwards;
+        }
+
+        /* Stagger phases */
+        .phase:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .phase:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .phase:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .phase:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .phase:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        .phase:nth-child(6) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes roadmap-fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Alternate: odd phases card on left, even on right */
+        .phase.left .card-side {
+            grid-column: 1;
+            text-align: right;
+        }
+
+        .phase.left .empty-side {
+            grid-column: 3;
+        }
+
+        .phase.right .card-side {
+            grid-column: 3;
+            text-align: left;
+        }
+
+        .phase.right .empty-side {
+            grid-column: 1;
+        }
+
+        .phase .node-col {
+            grid-column: 2;
+        }
+
+        /* NODE */
+        .node-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            padding-top: 10px;
+        }
+
+        .node {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+            background: var(--ink3);
+            flex-shrink: 0;
+        }
+
+        .node::before {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            border-radius: 50%;
+            border: 1px solid currentColor;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .node:hover::before,
+        .node.active::before {
+            opacity: 0.3;
+            transform: scale(1.1);
+        }
+
+        .node-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .node-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .node-num {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: inherit;
+            opacity: 0.6;
+            margin-top: 6px;
+        }
+
+        /* CARD */
+        .card-side {
+            position: relative;
+        }
+
+        .phase-card {
+            border: 1px solid;
+            border-radius: 4px;
+            background: var(--ink2);
+            padding: 0;
+            overflow: hidden;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+            display: inline-block;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 8px 8px 18px rgba(0, 0, 0, 0.45);
+        }
+
+        .phase.right .phase-card {
+            float: left;
+        }
+
+        .phase.left .phase-card {
+            float: right;
+        }
+
+        .phase-card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow:
+                0 20px 40px rgba(0, 0, 0, 0.6),
+                0 0 20px rgba(61, 255, 192, 0.05);
+            border-color: rgba(61, 255, 192, 0.3) !important;
+        }
+
+        /* Card header */
+        .card-header {
+            padding: 14px 18px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.3s;
+        }
+
+        /* Node static active style if any (none needed if no expansion) */
+
+        /* FOOTER NOTE */
+        .roadmap-footer-note {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 32px;
+            border-top: 1px solid var(--roadmap-border);
+        }
+
+        .roadmap-footer-note p {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--roadmap-muted);
+            letter-spacing: 1px;
+        }
+
+        .roadmap-footer-note .accent {
+            color: var(--accent-cyan);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 680px) {
+            .roadmap::before {
+                left: 24px;
+            }
+
+            .phase {
+                grid-template-columns: 48px 1fr;
+                grid-template-rows: auto auto;
+            }
+
+            .phase.left .card-side,
+            .phase.right .card-side {
+                grid-column: 2;
+                grid-row: 1;
+                text-align: left;
+            }
+
+            .phase .node-col {
+                grid-column: 1;
+                grid-row: 1;
+            }
+
+            .phase.left .empty-side,
+            .phase.right .empty-side {
+                display: none;
+            }
+
+            .phase .node-col {
+                padding-top: 8px;
+            }
+
+            .phase.right .phase-card,
+            .phase.left .phase-card {
+                float: none;
+                max-width: 100%;
+            }
+
+            .node {
+                width: 40px;
+                height: 40px;
+            }
+
+            .node-icon svg {
+                width: 16px;
+                height: 16px;
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+   BLOGS
+═══════════════════════════════════════════════════════════ */
+        .blogs-section {
+            padding: 8rem 0;
+        }
+
+        .blogs-grid {
+            display: grid;
+            grid-template-columns: 1.8fr 1fr;
+            gap: 28px;
+            background: transparent;
+            border: none;
+            margin-top: 4rem;
+        }
+
+        .blogs-side {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            background: transparent;
+        }
+
+        .blog-featured {
+            background: var(--ink2);
+            padding: 2.5rem;
+            transition: box-shadow 0.3s var(--ease-out), transform 0.3s var(--ease-out);
+            display: flex;
+            flex-direction: column;
+            border-radius: 20px;
+            border: none;
+            box-shadow:
+                8px 8px 18px rgba(0, 0, 0, 0.55),
+                -4px -4px 12px rgba(255, 255, 255, 0.04);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .blog-featured::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.055) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .blog-featured::after {
+            content: '';
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            right: 1px;
+            height: 35%;
+            border-radius: 20px 20px 60% 60% / 20px 20px 28px 28px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .blog-featured:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                12px 12px 28px rgba(0, 0, 0, 0.6),
+                -5px -5px 16px rgba(255, 255, 255, 0.05),
+                inset 0 0 0 1px rgba(196, 168, 255, 0.2);
+        }
+
+        .blog-featured:active {
+            transform: translateY(1px);
+            box-shadow:
+                inset 4px 4px 10px rgba(0, 0, 0, 0.5),
+                inset -2px -2px 6px rgba(255, 255, 255, 0.03);
+        }
+
+        .blog-small {
+            background: var(--ink2);
+            padding: 2rem 2.5rem;
+            transition: box-shadow 0.3s var(--ease-out), transform 0.3s var(--ease-out);
+            border-left: none;
+            flex: 1;
+            border-radius: 20px;
+            border: none;
+            box-shadow:
+                7px 7px 16px rgba(0, 0, 0, 0.52),
+                -3px -3px 10px rgba(255, 255, 255, 0.04);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .blog-small::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.045) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .blog-small::after {
+            content: '';
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            right: 1px;
+            height: 32%;
+            border-radius: 20px 20px 60% 60% / 20px 20px 26px 26px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.045) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .blog-small:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                10px 10px 24px rgba(0, 0, 0, 0.58),
+                -4px -4px 14px rgba(255, 255, 255, 0.05),
+                inset 0 0 0 1px rgba(77, 217, 255, 0.18);
+        }
+
+        .blog-small:active {
+            transform: translateY(1px);
+            box-shadow:
+                inset 4px 4px 10px rgba(0, 0, 0, 0.5),
+                inset -2px -2px 6px rgba(255, 255, 255, 0.03);
+        }
+
+        .blog-cat-tag {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.62rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border: 1px solid;
+            display: inline-block;
+            width: fit-content;
+            margin-bottom: 1rem;
+        }
+
+        .tag-pwn {
+            color: var(--r);
+            border-color: rgba(248, 113, 113, .25);
+        }
+
+        .tag-web {
+            color: var(--c);
+            border-color: rgba(56, 189, 248, .25);
+        }
+
+        .tag-crypto {
+            color: var(--y);
+            border-color: rgba(251, 191, 36, .25);
+        }
+
+        .tag-mal {
+            color: var(--p);
+            border-color: rgba(167, 139, 250, .25);
+        }
+
+        .tag-osint {
+            color: var(--g);
+            border-color: rgba(61, 255, 192, .25);
+        }
+
+        .tag-rev {
+            color: #fb923c;
+            border-color: rgba(251, 146, 60, .25);
+        }
+
+        .blog-preview {
+            background: var(--ink3);
+            border: 1px solid var(--line);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.68rem;
+            color: rgba(61, 255, 192, 0.5);
+            line-height: 2;
+            min-height: 120px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .blog-title {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--head);
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.75rem;
+        }
+
+        .blog-small .blog-title {
+            font-size: 0.88rem;
+        }
+
+        .blog-excerpt {
+            font-size: 0.88rem;
+            color: var(--muted);
+            line-height: 1.7;
+            flex: 1;
+        }
+
+        .blog-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid var(--line);
+        }
+
+        .blog-author {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+        }
+
+        .blog-readtime {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.05em;
+            color: var(--g);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .blog-readtime::after {
+            content: '→';
+            transition: transform 0.2s;
+        }
+
+        .blog-featured:hover .blog-readtime::after,
+        .blog-small:hover .blog-readtime::after {
+            transform: translateX(4px);
+        }
+
+        .blogs-more {
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+   TOOLS
+═══════════════════════════════════════════════════════════ */
+        .tools-section {
+            padding: 8rem 0;
+            background: var(--ink2);
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 22px;
+            background: transparent;
+            border: none;
+            margin-top: 4rem;
+        }
+
+        .tool-item {
+            background: var(--ink2);
+            padding: 1.8rem;
+            transition: box-shadow 0.3s var(--ease-out), transform 0.3s var(--ease-out);
+            position: relative;
+            overflow: hidden;
+            border-radius: 18px;
+            border: none;
+            box-shadow:
+                7px 7px 16px rgba(0, 0, 0, 0.52),
+                -3px -3px 10px rgba(255, 255, 255, 0.04);
+        }
+
+        .tool-item::after {
+            content: '';
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            right: 1px;
+            height: 35%;
+            border-radius: 18px 18px 60% 60% / 18px 18px 26px 26px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .tool-item:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                10px 10px 24px rgba(0, 0, 0, 0.58),
+                -4px -4px 14px rgba(255, 255, 255, 0.05),
+                inset 0 0 0 1px rgba(77, 217, 255, 0.18);
+        }
+
+        .tool-item:active {
+            transform: translateY(1px);
+            box-shadow:
+                inset 4px 4px 9px rgba(0, 0, 0, 0.48),
+                inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+        }
+
+        .tool-emoji {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+        }
+
+        .tool-name {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--head);
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.01em;
+        }
+
+        .tool-desc {
+            font-size: 0.8rem;
+            color: var(--muted);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .tool-tag {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--c);
+            opacity: 0.7;
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+   OPEN SOURCE / RESOURCES
+═══════════════════════════════════════════════════════════ */
+        .resources-section {
+            padding: 8rem 0;
+        }
+
+        .resources-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            background: transparent;
+            border: none;
+            margin-top: 4rem;
+        }
+
+        .res-card {
+            background: var(--ink2);
+            padding: 2.5rem;
+            transition: box-shadow 0.3s var(--ease-out), transform 0.3s var(--ease-out);
+            position: relative;
+            border-radius: 20px;
+            border: none;
+            box-shadow:
+                8px 8px 18px rgba(0, 0, 0, 0.55),
+                -4px -4px 12px rgba(255, 255, 255, 0.04);
+            overflow: hidden;
+        }
+
+        .res-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.055) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .res-card::after {
+            content: '';
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            right: 1px;
+            height: 35%;
+            border-radius: 20px 20px 60% 60% / 20px 20px 28px 28px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .res-card:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                12px 12px 28px rgba(0, 0, 0, 0.6),
+                -5px -5px 16px rgba(255, 255, 255, 0.05),
+                inset 0 0 0 1px rgba(0, 255, 178, 0.18);
+        }
+
+        .res-card:active {
+            transform: translateY(1px);
+            box-shadow:
+                inset 4px 4px 10px rgba(0, 0, 0, 0.5),
+                inset -2px -2px 6px rgba(255, 255, 255, 0.03);
+        }
+
+        .res-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+        }
+
+        .res-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--ink3);
+            border: 1px solid var(--line2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            border-radius: 8px;
+        }
+
+        .res-star {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.68rem;
+            color: var(--y);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .res-name {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--head);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .res-desc {
+            font-size: 0.85rem;
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        .res-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .res-tag {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            background: var(--ink3);
+            border: 1px solid var(--line2);
+            color: var(--muted);
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+   CTA BAND
+═══════════════════════════════════════════════════════════ */
+        .cta-band {
+            padding: 8rem 0;
+            background: var(--ink2);
+            border-top: 1px solid var(--line);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-blob {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(61, 255, 192, 0.06) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            animation: breathe 6s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+
+        .cta-band .wrap {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-band .label {
+            justify-content: center;
+        }
+
+        .cta-band .label::before {
+            display: none;
+        }
+
+        .cta-title {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2rem, 5vw, 4rem);
+            color: var(--white);
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin: 1rem 0 1.5rem;
+        }
+
+        .cta-title em {
+            font-style: normal;
+            color: var(--g);
+        }
+
+        .cta-sub {
+            font-size: 1rem;
+            color: var(--muted);
+            max-width: 420px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.75;
+        }
+
+        .cta-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════════════ */
+        footer {
+            background: var(--ink);
+            border-top: 1px solid var(--line);
+            padding: 4rem 0 2rem;
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+
+
+        .footer-logo {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 800;
+            font-size: 1.15rem;
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .footer-about {
+            font-size: 0.85rem;
+            color: var(--muted);
+            line-height: 1.75;
+            max-width: 260px;
+        }
+
+        .footer-col-title {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.62rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 1.2rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .footer-links a {
+            font-size: 0.85rem;
+            color: var(--muted);
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-links a:hover {
+            color: var(--g);
+        }
+
+        .footer-links a::before {
+            content: '›';
+            color: var(--muted);
+            font-size: 0.9rem;
+            opacity: 0.5;
+            transition: opacity 0.2s, color 0.2s;
+        }
+
+        .footer-links a:hover::before {
+            opacity: 1;
+            color: var(--g);
+        }
+
+        .footer-bottom {
+            padding-top: 2rem;
+            border-top: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .footer-copy {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            opacity: 0.6;
+        }
+
+        .footer-socials {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .s-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--line2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--muted);
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .s-btn:hover {
+            border-color: var(--g);
+            color: var(--ink);
+            background: var(--g);
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 10px 20px rgba(61, 255, 192, 0.25);
+        }
+
+        /* ─── MOBILE ─────────────────────────────────────────────── */
+        @media (max-width: 960px) {
+            nav {
+                padding: 0 1.5rem;
+            }
+
+            .nav-links,
+            .nav-cta {
+                display: none;
+            }
+
+            .hero,
+            .wrap {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+
+            .hero-stats,
+            .scroll-hint {
+                display: none;
+            }
+
+            .hub-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ctf-layout {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .blogs-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .resources-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .road-nodes {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .ch-header,
+            .ch-row {
+                grid-template-columns: 2fr 1fr 1fr;
+            }
+
+            .ch-header span:last-child,
+            .ch-pts {
+                display: none;
+            }
+        }
+
+        /* ─── WHOAMI ────────────────────────────────────────── */
+        .whoami-section {
+            padding: 8rem 0;
+            background: var(--black);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .whoami-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 4rem;
+            margin-top: 4rem;
+            align-items: stretch;
+        }
+
+        .whoami-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .whoami-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: var(--body);
+        }
+
+        .whoami-stats {
+            display: flex;
+            gap: 3rem;
+            margin: 3rem 0;
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+            padding: 2rem 0;
+        }
+
+        .wstat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wstat-val {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--white);
+        }
+
+        .wstat-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .whoami-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: auto;
+            padding-top: 3rem;
+        }
+
+        /* Terminal Mockup */
+        .terminal-mock {
+            background: #0d0d0d;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        .term-head {
+            background: #1a1a1a;
+            padding: 12px 18px;
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .term-head .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .term-head .red { background: #ff5f56; }
+        .term-head .yellow { background: #ffbd2e; }
+        .term-head .green { background: #27c93f; }
+
+        .term-body {
+            padding: 1.5rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            color: #d1d1d1;
+            line-height: 1.5;
+        }
+
+        .term-body .prompt {
+            color: var(--red);
+            font-weight: 700;
+        }
+
+        .term-body .output {
+            color: #888;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .blink {
+            animation: blink 1s step-end infinite;
+            display: inline-block;
+            width: 8px;
+            height: 18px;
+            background: var(--red);
+            vertical-align: middle;
+        }
+
+        @media (max-width: 968px) {
+            .whoami-grid {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAV  -->
+    <nav>
+        <a href="#top" class="nav-logo">
+            R3DEX
+        </a>
+        <ul class="nav-links">
+            <li><a href="#ctf">Playground</a></li>
+            <li><a href="#roadmap">Roadmap</a></li>
+            <li><a href="#blogs">Blogs</a></li>
+            <li><a href="#resources">Resources</a></li>
+            <li><a href="#whoami">Whoami</a></li>
+        </ul>
+        <a href="#" class="nav-cta" style="opacity: 0;">.</a>
+    </nav>
+
+    <!-- HERO  -->
+    <section class="hero" id="top">
+        <div class="hero-dots"></div>
+        <div class="hero-blob"></div>
+        <div class="hero-blob2"></div>
+
+        <div class="hero-inner">
+            <div class="hero-eyebrow"><span></span>Document From The Red Side</div>
+            <h1 class="hero-title">
+                Built by a pentester,<br>
+                <em>for those who break things.</em>
+            </h1>
+            <p class="hero-desc">
+                A space to learn penetration testing, no matter where you're stuck...
+            </p>
+            <div class="hero-actions">
+                <a href="#hub" class="btn btn-fill">Explore Hub ↓</a>
+                <a href="#ctf" class="btn btn-outline">Active CTFs</a>
+            </div>
+        </div>
+
+        <div class="hero-stats">
+            <div>
+                <div class="hstat-num" id="c1">200+</div>
+                <div class="hstat-label">Challenges </div>
+            </div>
+            <div>
+                <div class="hstat-num">40+</div>
+                <div class="hstat-label">Labs</div>
+            </div>
+            <div>
+                <div class="hstat-num">10+</div>
+                <div class="hstat-label">Contributors</div>
+            </div>
+        </div>
+
+        <div class="scroll-hint">
+            <div class="scroll-line"></div>
+            Scroll to explore
+        </div>
+    </section>
+
+    <!-- TICKER  -->
+    <div class="ticker">
+        <div class="ticker-track" id="ticker">
+            <!-- filled by JS -->
+        </div>
+    </div>
+
+
+    <div class="divider"></div>
+
+    <!-- PATH DEEP DIVE -->
+    <section class="paths-sec" id="ctf">
+        <div class="wrap">
+            <div class="reveal">
+                <div class="label">
+                    Choose Your Path
+                </div>
+                <h2 class="section-title">
+                    TWO WAYS<br>TO <span class="hl">LEVEL UP</span>
+                </h2>
+            </div>
+            
+            <div class="paths-grid reveal">
+                <div class="path-deep r d1" style="--dc:var(--blue)" onclick="location.href='lab-learn.html'">
+                    <div class="pd-num">01</div>
+                    <div class="pd-label">Learn Path</div>
+                    <div class="pd-title">LEARN</div>
+                    <div class="pd-desc">Start from zero or fill in gaps. Structured modules take you from concept to working
+                        exploit with simulations, guided labs, and a final exam.</div>
+                    <ul class="pd-list">
+                        <li><span>▸</span><span>Curated modules covering cyber security fundamentals</span></li>
+                        <li><span>▸</span><span>Interactive in-browser simulations no VM needed</span></li>
+                        <li><span>▸</span><span>Guided hands-on labs with checkpoints</span></li>
+                        <li><span>▸</span><span>Progress tracking and completion</span></li>
+                    </ul>
+                    <button class="pd-cta" style="--dc:var(--blue);background:var(--blue);color:var(--black)"
+                        onclick="location.href='lab-learn.html'">Enter Learn Path →</button>
+                </div>
+
+                <div class="path-deep r d2" style="--dc:var(--red)" onclick="location.href='lab-practice.html'">
+                    <div class="pd-num">02</div>
+                    <div class="pd-label">Practice Path</div>
+                    <div class="pd-title">PRACTICE</div>
+                    <div class="pd-desc">No instructions. No hints unless you pay for them. CTF challenges and vulnerable
+                        machines that don't care how long you've been hacking.</div>
+                    <ul class="pd-list">
+                        <li><span>▸</span><span>Custom CTF challenges across Web, Crypto, Rev, Forensics</span></li>
+                        <li><span>▸</span><span>vulnerable machines Easy to Hard</span></li>
+                        <li><span>▸</span><span>Weekly new releases and CTF</span></li>
+                        <li><span>▸</span><span>Community writeups</span></li>
+                    </ul>
+                    <button class="pd-cta" onclick="location.href='lab-practice.html'">Enter Practice Path →</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ROADMAP  -->
+    <section class="roadmap-section" id="roadmap">
+        <div class="wrap">
+            <div class="roadmap-integration">
+                <div class="roadmap-header reveal">
+                    <div class="label">Learning Path</div>
+                    <h2 class="section-title">Learning <span class="hl">Roadmap</span></h2>
+                    <p class="section-sub">Structured path from fundamentals to advanced offensive security.</p>
+                </div>
+
+                <!-- Roadmap Track -->
+                <div class="roadmap">
+
+                    <!-- PHASE 1 -->
+                    <div class="phase left phase-1">
+                        <div class="card-side">
+                            <div class="phase-card" data-phase="1">
+                                <div class="card-header">
+                                    <div class="card-header-text">
+                                        <span class="card-title">Phase 01 — Foundations</span>
+                                        <span class="card-subtitle">Networking, OS, Linux basics</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="node-col">
+                            <div class="node" data-phase="1"><span class="node-icon"><svg viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="12" r="9" />
+                                        <ellipse cx="12" cy="12" rx="4" ry="9" />
+                                        <line x1="3" y1="9" x2="21" y2="9" />
+                                        <line x1="3" y1="15" x2="21" y2="15" />
+                                    </svg></span></div>
+                            <div class="node-num">01</div>
+                        </div>
+                        <div class="empty-side"></div>
+                    </div>
+
+                    <!-- PHASE 2 -->
+                    <div class="phase right phase-2">
+                        <div class="empty-side"></div>
+                        <div class="node-col">
+                            <div class="node" data-phase="2"><span class="node-icon"><svg viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="10.5" cy="10.5" r="6.5" />
+                                        <line x1="15.5" y1="15.5" x2="21" y2="21" />
+                                        <line x1="10.5" y1="7" x2="10.5" y2="10.5" />
+                                        <line x1="10.5" y1="10.5" x2="14" y2="10.5" />
+                                    </svg></span></div>
+                            <div class="node-num">02</div>
+                        </div>
+                        <div class="card-side">
+                            <div class="phase-card" data-phase="2">
+                                <div class="card-header">
+                                    <div class="card-header-text">
+                                        <span class="card-title">Phase 02 — Reconnaissance</span>
+                                        <span class="card-subtitle">OSINT, scanning, enumeration</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PHASE 3 -->
+                    <div class="phase left phase-3">
+                        <div class="card-side">
+                            <div class="phase-card" data-phase="3">
+                                <div class="card-header">
+                                    <div class="card-header-text">
+                                        <span class="card-title">Phase 03 — Web Security</span>
+                                        <span class="card-subtitle">SQLi, XSS, CSRF, IDOR, bug bounty</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="node-col">
+                            <div class="node" data-phase="3"><span class="node-icon"><svg viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <rect x="8" y="8" width="8" height="10" rx="2" />
+                                        <path d="M8 10H5M8 14H4M16 10h3M16 14h4" />
+                                        <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+                                        <path d="M9 18l-2 2M15 18l2 2" />
+                                    </svg></span></div>
+                            <div class="node-num">03</div>
+                        </div>
+                        <div class="empty-side"></div>
+                    </div>
+
+                    <!-- PHASE 4 -->
+                    <div class="phase right phase-4">
+                        <div class="empty-side"></div>
+                        <div class="node-col">
+                            <div class="node" data-phase="4"><span class="node-icon"><svg viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
+                                    </svg></span></div>
+                            <div class="node-num">04</div>
+                        </div>
+                        <div class="card-side">
+                            <div class="phase-card" data-phase="4">
+                                <div class="card-header">
+                                    <div class="card-header-text">
+                                        <span class="card-title">Phase 04 — Exploitation</span>
+                                        <span class="card-subtitle">Metasploit, privesc, post-exploit</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PHASE 5 -->
+                    <div class="phase left phase-5">
+                        <div class="card-side">
+                            <div class="phase-card" data-phase="5">
+                                <div class="card-header">
+                                    <div class="card-header-text">
+                                        <span class="card-title">Phase 05 — Active Directory</span>
+                                        <span class="card-subtitle">Kerberos, BloodHound, lateral movement</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="node-col">
+                            <div class="node" data-phase="5"><span class="node-icon"><svg viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <rect x="3" y="11" width="18" height="10" rx="1" />
+                                        <path d="M3 11V7h4v4M10 11V5h4v6M17 11V7h4v4" />
+                                        <line x1="12" y1="15" x2="12" y2="21" />
+                                    </svg></span></div>
+                            <div class="node-num">05</div>
+                        </div>
+                        <div class="empty-side"></div>
+                    </div>
+
+                    <!-- PHASE 6 -->
+                    <div class="phase right phase-6">
+                        <div class="empty-side"></div>
+                        <div class="node-col">
+                            <div class="node" data-phase="6"><span class="node-icon"><svg viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                        <line x1="12" y1="9" x2="12" y2="7" />
+                                        <line x1="12" y1="15" x2="12" y2="17" />
+                                    </svg></span></div>
+                            <div class="node-num">06</div>
+                        </div>
+                        <div class="card-side">
+                            <div class="phase-card" data-phase="6">
+                                <div class="card-header">
+                                    <div class="card-header-text">
+                                        <span class="card-title">Phase 06 — Red Team Ops</span>
+                                        <span class="card-subtitle">Evasion, reporting, certs</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /roadmap -->
+
+                <!-- Footer -->
+                <div class="roadmap-footer-note"
+                    style="display: flex; flex-direction: column; align-items: center; gap: 2.5rem;">
+                    <a href="cybersecurity-roadmap.html" class="btn btn-outline">View Full Interactive Roadmap</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BLOGS  -->
+    <section class="blogs-section" id="blogs">
+        <div class="wrap">
+            <div class="reveal">
+                <div class="label">Research & Writing</div>
+                <h2 class="section-title">Recent <span class="hl">Blogs</span></h2>
+                <p class="section-sub">Technical deep-dives, CTF writeups, and vulnerability research from the
+                    community.</p>
+            </div>
+
+            <div class="blogs-grid reveal">
+                <!-- Featured -->
+                <a href="#" class="blog-featured">
+                    <div class="blog-cat-tag tag-pwn">Pwn</div>
+                    <div class="blog-preview">
+                        payload = b"A" * 64<br>
+                        payload += p64(pop_rdi)<br>
+                        payload += p64(bin_sh)<br>
+                        payload += p64(system)<br>
+                        <br>
+                        [+] Stack leak: 0x7ffd...<br>
+                        [+] Libc base: 0x7f9a...<br>
+                        [*] Switching to interactive<br>
+                        $ whoami → root
+                    </div>
+                    <div class="blog-title">Exploiting Heap Use-After-Free in Linux Kernel 6.8 — A Deep Dive into LPE
+                    </div>
+                    <div class="blog-excerpt">Covering heap feng shui, cache poisoning, and achieving local privilege
+                        escalation on modern kernels with full SMEP/SMAP bypasses.</div>
+                    <div class="blog-meta-row">
+                        <span class="blog-author">by 0xShadow · Mar 12, 2025</span>
+                        <span class="blog-readtime">12 min read </span>
+                    </div>
+                </a>
+
+                <!-- Side cards -->
+                <div class="blogs-side">
+                    <a href="#" class="blog-small">
+                        <div class="blog-cat-tag tag-crypto">Crypto</div>
+                        <div class="blog-title">Breaking Lattice Crypto with BKZ Reduction</div>
+                        <div class="blog-excerpt">How we solved the hardest crypto challenge in CryptoCTF 2025 using LLL
+                            lattice reduction attacks.</div>
+                        <div class="blog-meta-row">
+                            <span class="blog-author">xorshift · Mar 10</span>
+                            <span class="blog-readtime">9 min </span>
+                        </div>
+                    </a>
+
+                    <a href="#" class="blog-small">
+                        <div class="blog-cat-tag tag-web">Web</div>
+                        <div class="blog-title">HTTP/2 Request Smuggling: New Vectors in CDNs</div>
+                        <div class="blog-excerpt">Novel smuggling techniques in HTTP/2-to-HTTP/1.1 downgrade paths
+                            across major CDN providers.</div>
+                        <div class="blog-meta-row">
+                            <span class="blog-author">nullbyte · Mar 8</span>
+                            <span class="blog-readtime">7 min </span>
+                        </div>
+                    </a>
+
+                    <a href="#" class="blog-small">
+                        <div class="blog-cat-tag tag-mal">Malware</div>
+                        <div class="blog-title">Deobfuscating Cobalt Strike Shellcode in Memory</div>
+                        <div class="blog-excerpt">Memory forensics using Volatility 3 to extract and decode Cobalt
+                            Strike beacons from a live RAM dump.</div>
+                        <div class="blog-meta-row">
+                            <span class="blog-author">malw4re · Mar 4</span>
+                            <span class="blog-readtime">14 min </span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="blogs-more reveal">
+                <a href="#" class="btn btn-outline">View All Articles</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- OPEN SOURCE RESOURCES  -->
+    <section class="resources-section" id="resources">
+        <div class="wrap">
+            <div class="reveal">
+                <div class="label">Open Source</div>
+                <h2 class="section-title">Curated <span class="hl">resources</span></h2>
+                <p class="section-sub">Handpicked GitHub repos, cheat sheets, and practice environments vetted by the
+                    community.</p>
+            </div>
+
+            <div class="resources-grid reveal">
+                <a href="#" class="res-card">
+                    <div class="res-header">
+                        <div class="res-icon">📚</div>
+                        <div class="res-star">★ 42.3k</div>
+                    </div>
+                    <div class="res-name">PayloadsAllTheThings</div>
+                    <div class="res-desc">A massive collection of useful payloads and bypasses for web application
+                        security testing. Covers SQLi, XSS, SSTI, SSRF, and more with practical examples.</div>
+                    <div class="res-tags">
+                        <span class="res-tag">Web</span>
+                        <span class="res-tag">Payloads</span>
+                        <span class="res-tag">Cheat Sheet</span>
+                    </div>
+                </a>
+
+                <a href="#" class="res-card">
+                    <div class="res-header">
+                        <div class="res-icon">🔩</div>
+                        <div class="res-star">★ 18.7k</div>
+                    </div>
+                    <div class="res-name">HackTricks</div>
+                    <div class="res-desc">The comprehensive pentesting book covering everything from initial recon to
+                        full compromise. Invaluable for OSCP and red team engagements.</div>
+                    <div class="res-tags">
+                        <span class="res-tag">Pentesting</span>
+                        <span class="res-tag">OSCP</span>
+                        <span class="res-tag">Red Team</span>
+                    </div>
+                </a>
+
+                <a href="#" class="res-card">
+                    <div class="res-header">
+                        <div class="res-icon">🧱</div>
+                        <div class="res-star">★ 11.2k</div>
+                    </div>
+                    <div class="res-name">SecLists</div>
+                    <div class="res-desc">The security tester's companion. Curated lists of usernames, passwords, URLs,
+                        sensitive data patterns, and fuzzing payloads.</div>
+                    <div class="res-tags">
+                        <span class="res-tag">Wordlists</span>
+                        <span class="res-tag">Fuzzing</span>
+                        <span class="res-tag">Brute Force</span>
+                    </div>
+                </a>
+
+                <a href="#" class="res-card">
+                    <div class="res-header">
+                        <div class="res-icon">🐚</div>
+                        <div class="res-star">★ 9.4k</div>
+                    </div>
+                    <div class="res-name">GTFOBins</div>
+                    <div class="res-desc">Curated list of Unix binaries that can be exploited to bypass local security
+                        restrictions, escape restricted environments, and escalate privileges.</div>
+                    <div class="res-tags">
+                        <span class="res-tag">Privesc</span>
+                        <span class="res-tag">Linux</span>
+                        <span class="res-tag">GTFO</span>
+                    </div>
+                </a>
+            </div>
+
+            <div style="text-align:center; margin-top:2.5rem;" class="reveal">
+                <a href="#" class="btn btn-outline">Browse All Resources</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ─── WHOAMI ────────────────────────────────────────── -->
+    <section class="whoami-section" id="whoami">
+        <div class="wrap">
+            <div class="reveal">
+                <div class="label">The Developer</div>
+                <h2 class="section-title">WHO<span class="hl">AMI</span></h2>
+            </div>
+
+            <div class="whoami-grid reveal">
+                <div class="whoami-content">
+                    <p class="whoami-text">
+                        I'm <span style="color:var(--red); font-weight:700;">Karthik Parambil</span>, a Security Researcher, Penetration Tester, and Developer with a strong passion for offensive security and vulnerability assessment.
+                    </p>
+                    <p class="whoami-text" style="margin-top: 1rem; opacity: 0.8;">
+With a background in penetration testing and a love for ethically “breaking things,” I created R3DEX a community hub dedicated to sharing knowledge and resources to help others grow in security.                    </p>
+                    
+
+
+                    <div class="whoami-actions">
+                        <a href="https://github.com/karthikparambil" class="btn btn-outline" target="_blank">GitHub</a>
+                        <a href="https://www.linkedin.com/in/karthikparambil9" class="btn btn-outline" target="_blank">LinkedIn</a>
+                    </div>
+                </div>
+                
+                <div class="whoami-visual">
+                    <div class="terminal-mock">
+                        <div class="term-head">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                        </div>
+                        <div class="term-body">
+                            <div class="line"><span class="prompt">$</span> whoami</div>
+                            <div class="output">r3dex</div>
+                            <div class="line"><span class="prompt">$</span> cat skills.txt</div>
+                            <div class="output">
+                                • Web Pentesting<br>
+                                • Network Security<br>
+                                • Reverse Engineering<br>
+                                • Vulnerability Research<br>
+                                • Tool Development
+                            </div>
+                            <div class="line"><span class="prompt">$</span> status --current</div>
+                            <div class="output">Building the next gen hacking hub...</div>
+                            <div class="line blink">_</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- WHOAMI  -->
+    <section class="whoami-section" id="whoami">
+        <div class="wrap">
+            <div class="reveal">
+                <div class="label">The Developer</div>
+                <h2 class="section-title">WHO<span class="hl">AMI</span></h2>
+            </div>
+
+            <div class="whoami-grid reveal">
+                <div class="whoami-content">
+                    <p class="whoami-text">
+                        I'm <span style="color:var(--red); font-weight:700;">Karthik Parambil</span>, a Security Researcher, Penetration Tester, and Developer with a strong passion for offensive security and vulnerability assessment.
+                    </p>
+                    <p class="whoami-text" style="margin-top: 1rem; opacity: 0.8;">
+With a background in penetration testing and a love for ethically “breaking things,” I created R3DEX a community hub dedicated to sharing knowledge and resources to help others grow in security.                    </p>
+                    
+
+
+                    <div class="whoami-actions">
+                        <a href="https://github.com/karthikparambil" class="btn btn-outline" target="_blank">GitHub</a>
+                        <a href="https://www.linkedin.com/in/karthikparambil9" class="btn btn-outline" target="_blank">LinkedIn</a>
+                    </div>
+                </div>
+                
+                <div class="whoami-visual">
+                    <div class="terminal-mock">
+                        <div class="term-head">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                        </div>
+                        <div class="term-body">
+                            <div class="line"><span class="prompt">$</span> whoami</div>
+                            <div class="output">r3dex</div>
+                            <div class="line"><span class="prompt">$</span> cat skills.txt</div>
+                            <div class="output">
+                                • Web Pentesting<br>
+                                • Network Security<br>
+                                • Reverse Engineering<br>
+                                • Vulnerability Research<br>
+                                • Tool Development
+                            </div>
+                            <div class="line"><span class="prompt">$</span> status --current</div>
+                            <div class="output">Building the next gen hacking hub...</div>
+                            <div class="line blink">_</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- CTA  -->
+    <section class="cta-band" id="cta">
+        <div class="cta-blob"></div>
+        <div class="wrap">
+            <div class="reveal">
+                <div class="label">Community</div>
+                <h2 class="cta-title">Ready to start<br><em>hacking?</em></h2>
+                <p class="cta-sub">Join 1k+ ethical hackers. Get access to resources.</p>
+                <div class="cta-actions">
+                    <a href="#" class="btn btn-outline">Explore Resources</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER  -->
+    <footer>
+        <div class="wrap">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        R3DEX
+                    </div>
+                    <p class="footer-about">The ethical hacker's command center. Curated CTF resources, tool docs, and
+                        learning paths built by the security community.</p>
+                </div>
+
+                <div>
+                    <div class="footer-col-title">Hub</div>
+                    <ul class="footer-links">
+                        <li><a href="#ctf">Learning Paths</a></li>
+                        <li><a href="#ctf">Challenges</a></li>
+                        <li><a href="#roadmap">Roadmap</a></li>
+
+                    </ul>
+                </div>
+
+                <div>
+                    <div class="footer-col-title">Resources</div>
+                    <ul class="footer-links">
+                        <li><a href="#blogs">Research Blog</a></li>
+                        <li><a onclick="alert('Coming Soon')">Cheat Sheets</a></li>
+                        <li><a href="#ctf">Practice Labs</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <div class="footer-col-title">Community</div>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/karthikparambil">GitHub</a></li>
+                        <li><a onclick="alert('Coming Soon')">Discord Server</a></li>
+                        <li><a href="#">Contribute</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-copy">© 2025 R3dex · Built for the hacking community · Stay ethical.</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ─── SCRIPTS ───────────────────────────────────────── -->
+    <script>
+        /* Scroll reveal */
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('up');
+                }
+            });
+        }, { threshold: 0.08 });
+        document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+        /* Roadmap node hover */
+        document.querySelectorAll('.road-node-wrap').forEach(n => {
+            n.addEventListener('mouseenter', () => n.classList.add('lit'));
+            n.addEventListener('mouseleave', () => {
+                if (!n.dataset.locked) n.classList.remove('lit');
+            });
+        });
+
+        /* Ticker */
+        const items = [
+            'CTF Writeups', 'CTF Challenges','Vulnerable Machines',
+            'Learning Roadmaps', 'Open Source Resources', 'Vulnerability Research',
+            'Web Security', 'Cryptography', 'Reverse Engineering', 'Forensics',
+            'Bug Bounty', 'Red Team Ops','security+ prep',
+            'Network Security', 'OSINT Techniques',
+        ];
+        const track = document.getElementById('ticker');
+        // duplicate for infinite scroll
+        [...items, ...items].forEach(txt => {
+            const d = document.createElement('div');
+            d.className = 'ticker-item';
+            d.innerHTML = `<span class="dot"></span>${txt}`;
+            track.appendChild(d);
+        });
+
+        /* Smooth counter for hero */
+        function countUp(el, target, duration = 1800) {
+            const start = performance.now();
+            const update = (now) => {
+                const t = Math.min((now - start) / duration, 1);
+                const ease = 1 - Math.pow(1 - t, 3);
+                el.textContent = Math.floor(ease * target).toLocaleString() + '+';
+                if (t < 1) requestAnimationFrame(update);
+            };
+            requestAnimationFrame(update);
+        }
+
+        const heroObs = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting) {
+                document.querySelectorAll('.hstat-num').forEach(el => {
+                    const raw = el.textContent.replace(/[^0-9]/g, '');
+                    if (raw) countUp(el, parseInt(raw));
+                });
+                heroObs.disconnect();
+            }
+        }, { threshold: 0.5 });
+        const heroStats = document.querySelector('.hero-stats');
+        if (heroStats) heroObs.observe(heroStats);
+
+        /* Stagger hub cards on reveal */
+        document.querySelectorAll('.hub-card').forEach((card, i) => {
+            card.style.transitionDelay = `${i * 0.07}s`;
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Peasy Walkthrough | R3dex Writeups</title>
+    <style>
+        body { 
+            background: #0d1117; 
+            color: #e6edf3; 
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif; 
+            padding: 4rem 2rem; 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            line-height: 1.6; 
+        }
+        h1 { color: #ffffff; font-size: 2.2rem; margin-bottom: 1.5rem; font-weight: 400; }
+        h3 { color: #ffffff; border-bottom: 1px solid #30363d; padding-bottom: 0.5rem; margin-top: 3rem; margin-bottom: 1.5rem; font-size: 1.3rem; font-weight: 400; }
+        a { color: #4493f8; text-decoration: none; transition: 0.2s; }
+        a:hover { text-decoration: underline; }
+        .back-link { display: inline-block; margin-bottom: 3rem; color: #8b949e; font-size: 0.9rem; }
+        .back-link::before { content: '← '; }
+        .content { margin-top: 2rem; }
+        code { background: rgba(110, 118, 129, 0.2); padding: 0.2rem 0.4rem; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; color: #e6edf3; font-size: 0.9em; }
+        pre { 
+            background: #161b22; 
+            padding: 1.2rem; 
+            border-radius: 6px; 
+            overflow-x: auto; 
+            font-family: 'IBM Plex Mono', monospace; 
+            border: 1px solid #30363d; 
+            margin: 1.5rem 0; 
+            color: #e6edf3;
+            font-size: 0.9rem;
+        }
+        ul, ol { margin-bottom: 1.5rem; padding-left: 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+        p { margin-bottom: 1.2rem; }
+        hr { border: 0; border-top: 1px solid #30363d; margin: 3rem 0; }
+        .hero-banner { 
+            width: 100%; 
+            max-height: 500px; 
+            object-fit: contain; 
+            margin-bottom: 2.5rem; 
+            background: transparent;
+        }
+        strong { font-weight: 400; color: #ffffff; }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">Back to Writeups</a>
+    
+    <div class="content">
+        <img src="../assets/easy_peasy.png" alt="Easy Peasy Banner" class="hero-banner">
+        <h1>TryHackMe - Easy Peasy Walkthrough</h1>
+        
+        <p>A concise walkthrough of the <strong>Easy Peasy</strong> CTF room on TryHackMe. <br>
+        This guide covers enumeration, exploitation, and privilege escalation.</p>
+
+        <hr>
+
+        <h3>Enumeration</h3>
+        <p>Scan the target with <strong>nmap</strong>:</p>
+        <pre>nmap -sC -sV -p- &lt;target-ip&gt;</pre>
+        <p>Open ports found:</p>
+        <ul>
+            <li>80 (nginx 1.16.1)</li>
+            <li>6498</li>
+            <li>65524 (Apache)</li>
+        </ul>
+
+        <hr>
+
+        <h3>Exploitation Steps</h3>
+
+        <h4>Task 1 - Hidden Directory</h4>
+        <p>Used gobuster → discovered <code>/hidden/whatever/</code></p>
+        <p>Found a Base62 hash → decoded →</p>
+        <pre>Flag 1: [REDACTED]</pre>
+
+        <h4>Task 2 - Robots.txt</h4>
+        <p>On <code>IP:65524/robots.txt</code> → extracted unusual user-agent</p>
+        <p>Decoded with MD5 →</p>
+        <pre>Flag 2: [REDACTED]</pre>
+
+        <h4>Task 3 - Source Code</h4>
+        <p>Source code at <code>IP:65524</code> → contained hash</p>
+        <pre>Flag 3: [REDACTED]</pre>
+
+        <h4>Task 4 - Hidden Path</h4>
+        <p>Another Base62 string →</p>
+        <pre>IP:65524/************
+
+Flag 4: Path discovery</pre>
+
+        <h4>Task 5 - Cracking Hash</h4>
+        <p>Hash in source code → cracked using john with easypeasy.txt</p>
+        <pre>Password: [REDACTED]</pre>
+
+        <h4>Task 6 - Steganography</h4>
+        <p>File <code>binarycodepixabay.jpg</code> → run stegcracker</p>
+        <p>Found credentials: username and password</p>
+
+        <h4>Task 7 - SSH Access</h4>
+        <p>Logged in with ssh</p>
+        <p>Found <code>user.txt</code> → ROT13 decoded →</p>
+        <pre>Flag 7: [REDACTED]</pre>
+
+        <h4>Task 8 - Privilege Escalation</h4>
+        <p>Checked <code>/etc/crontab</code> → modified <code>.mysecretcronjob.sh</code> with reverse shell</p>
+        <p>Got root shell via <code>nc -lvnp 4444</code></p>
+        <p>Read <code>/root/.root.txt</code> →</p>
+        <pre>Root Flag: [REDACTED]</pre>
+
+        <hr>
+
+        <h3>Conclusion</h3>
+        <p>Successfully captured all flags 🚩</p>
+        <p>This room reinforced skills in:</p>
+        <ul>
+            <li>Enumeration (nmap, gobuster)</li>
+            <li>Hash cracking</li>
+            <li>Steganography</li>
+            <li>Reverse shell setup</li>
+            <li>Privilege escalation</li>
+        </ul>
+    </div>
+</body>
+</html>

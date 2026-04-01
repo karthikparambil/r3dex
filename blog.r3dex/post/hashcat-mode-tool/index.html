@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hashcat Made Finding Modes Harder, So I Built a Tool to Fix It | R3dex Blog</title>
+    <style>
+        body { background: #0c0c0c; color: #dddddd; font-family: sans-serif; padding: 4rem; max-width: 800px; margin: 0 auto; line-height: 1.6; }
+        h1 { color: #ffffff; font-size: 2.5rem; line-height: 1.2; margin-bottom: 2rem; }
+        h2 { color: #ffffff; font-size: 1.8rem; margin-top: 2.5rem; margin-bottom: 1rem; }
+        a { color: #ff3b4b; text-decoration: none; display: inline-block; margin-bottom: 2rem; }
+        a:hover { text-decoration: underline; }
+        .back-link::before { content: '← '; }
+        .back-link { margin-bottom: 2rem; }
+        pre { background: #1a1a1a; padding: 1rem; border-radius: 5px; overflow-x: auto; color: #ff3b4b; font-family: monospace; white-space: pre-wrap; word-wrap: break-word; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; }
+        code { background: #1a1a1a; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: monospace; color: #ff3b4b; }
+        p { margin-bottom: 1.2rem; }
+    </style>
+</head>
+<body>
+    <a href="../../index.html" class="back-link">Back to Blog</a>
+    <h1>Hashcat Made Finding Modes Harder, So I Built a Tool to Fix It</h1>
+    
+    <h2>Introduction</h2>
+    <p>In the fast-paced world of penetration testing and Capture The Flag (CTF) competitions, time is your most valuable asset. When you extract a password hash during an engagement, the immediate next step is attempting to crack it. While Hashcat remains the industry standard for password recovery, recent changes to its documentation and reference pages have made finding the exact hash mode (-m flag) more cumbersome than it used to be.</p>
+
+    <p>Identifying the correct hash algorithm is step zero in password cracking. If you guess the wrong mode, Hashcat will either fail to execute or waste precious GPU cycles. To bridge this gap and streamline the workflow, I developed a dedicated Hash Identification Tool. Designed to instantly map unknown hashes to their corresponding Hashcat modes, this tool ensures you can get straight to cracking without scouring wikis.</p>
+
+    <h2>Features</h2>
+    <p>To accommodate different workflows, the project was built with two distinct versions:</p>
+    <ul>
+        <li><strong>Web-Based Interface:</strong> A clean, accessible GUI designed for beginners or professionals who need a quick, on-the-fly lookup without installing dependencies.</li>
+        <li><strong>CLI (Command-Line) Version:</strong> A robust, terminal-native script built for advanced users, penetration testers, and seamless integration into automated workflows.</li>
+        <li><strong>Extensive Database:</strong> Supports a massive array of common and obscure hash formats recognized by modern Hashcat.</li>
+        <li><strong>Ranking System:</strong> Intelligently handles ambiguous hashes by returning the most probable matches first.</li>
+    </ul>
+
+    <h2>How It Works</h2>
+    <p>Under the hood, the tool acts as a specialized pattern recognition engine. When a hash is submitted, the engine evaluates several cryptographic characteristics:</p>
+    <ul>
+        <li><strong>String Length:</strong> The tool measures the exact length of the input. For example, a 32-character string immediately filters the possibilities down to MD5, NTLM, MD4, etc.</li>
+        <li><strong>Character Sets:</strong> It checks if the hash consists solely of hexadecimal characters, includes base64 encoding, or features special alphanumeric combinations.</li>
+        <li><strong>Prefix Signatures:</strong> Many modern hashing algorithms use structural identifiers. The tool actively looks for known prefixes, such as $1$ (MD5crypt), $2a/b/y$ (bcrypt), or $6$ (SHA512crypt), to guarantee a precise match.</li>
+    </ul>
+
+    <h2>Installation (CLI Version)</h2>
+    <p>Getting the CLI version up and running on your local machine or attack box is straightforward. Simply clone the repository and run the tool:</p>
+    <pre>
+# Clone the repository
+git clone https://github.com/karthikparambil/hasmode.git
+
+# Navigate into the directory
+cd hasmode
+
+# (Optional) Install any required dependencies if specified in the repo
+pip install -r requirements.txt
+
+# Make the script executable
+chmod +x hasmode.py</pre>
+
+    <h2>Usage</h2>
+    <p>The CLI tool is designed to be highly intuitive. You can pass a hash directly as an argument.</p>
+    <p><strong>Command:</strong></p>
+    <pre>python3 hasmode.py -H "5d41402abc4b2a76b9719d911017c592"</pre>
+    <p><strong>Expected Output:</strong></p>
+    <pre>
+[*] Analyzing Hash...
+[+] Hash length: 32
+[+] Character set: Hexadecimal
+--------------------------------------------------
+[!] Possible Matches Found:
+ 1. MD5 -> Hashcat Mode: 0
+ 2. NTLM -> Hashcat Mode: 1000
+ 3. MD4 -> Hashcat Mode: 900</pre>
+
+    <h2>The Web Version</h2>
+    <p>Not everyone wants to drop into a terminal for a single hash lookup. The Web Version provides a frictionless alternative. Featuring a minimalist UI, users can simply paste their hash into the search bar and hit "Identify."</p>
+    <p>The primary benefit of the web interface is accessibility—it requires no installation, is OS-agnostic, and is perfect for quick reference during a CTF when you already have multiple terminal windows open.</p>
+
+    <h2>Example</h2>
+    <p>Let’s look at how the tool handles a more complex, salted hash.</p>
+    <p><strong>Input:</strong> $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy</p>
+    <p><strong>Output:</strong></p>
+    <pre>
+[+] Hash Type: bcrypt
+[+] Hashcat Mode: 3200
+[+] Description: Blowfish (OpenBSD)</pre>
+    <p>Instead of guessing, you instantly know to run: <code>hashcat -m 3200 hash.txt wordlist.txt</code>.</p>
+
+    <h2>Challenges Faced</h2>
+    <p>Building a reliable hash identifier comes with distinct technical hurdles. The biggest challenge was dealing with hash collisions and similarities. Many algorithms output standard 32, 40, or 64-character hexadecimal strings (e.g., MD5 vs. NTLM). Because it is mathematically impossible to differentiate them with 100% certainty just by looking at the string, I had to implement a logical fallback. Instead of forcing a single, potentially incorrect answer, the tool outputs a ranked list of "Probable Matches" based on commonality, allowing the user to test the most likely options first.</p>
+    <p>Handling false positives with complexly formatted enterprise hashes (like custom salted hashes or obscure database formats) also required careful tuning of the regular expressions used for pattern matching.</p>
+
+    <h2>Future Improvements</h2>
+    <p>The project is continuously evolving. On the roadmap for future updates:</p>
+    <ul>
+        <li><strong>Bulk Analysis:</strong> Adding the ability to ingest a .txt file containing thousands of assorted hashes and categorizing them automatically.</li>
+        <li><strong>API Support:</strong> Developing a REST API for the web version so other tools can query it programmatically.</li>
+        <li><strong>John the Ripper Support:</strong> Expanding the database to include JTR formats alongside Hashcat modes.</li>
+    </ul>
+
+    <h2>Contribution</h2>
+    <p>This tool was built to help the cybersecurity community, and it thrives on community input! Whether you want to add new hash signatures to the database, improve the web UI, or optimize the CLI code, contributions are highly encouraged.</p>
+    <p>Feel free to fork the project, submit pull requests, or open an issue if you spot a bug. You can find the full source code here: <a href="https://github.com/karthikparambil/hasmode" target="_blank" style="margin-bottom:0; display:inline;">https://github.com/karthikparambil/hasmode</a></p>
+
+    <p>Happy cracking!</p>
+</body>
+</html>

@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R3dex Blog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=IBM+Plex+Mono:wght@300;400;500;700&family=IBM+Plex+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ─── TOKENS ──────────────────────────────────────────────── */
+        :root {
+            --black: #0c0c0c;
+            --off:   #121212;
+            --grey1: #1a1a1a;
+            --grey3: #2a2a2a;
+            --line:  rgba(255,255,255,0.08);
+            --line2: rgba(255,255,255,0.15);
+            --muted: #888888;
+            --body:  #dddddd;
+            --white: #ffffff;
+            --red:   #ff3b4b;
+            --ease:  cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ─── RESET ──────────────────────────────────────────────── */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--black);
+            color: var(--body);
+            font-family: 'IBM Plex Sans', sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+            opacity: 0.02;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* ─── NAV ────────────────────────────────────────────────── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 4rem;
+            height: 80px;
+            background: rgba(12, 12, 12, 0.85);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .nav-logo {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--white);
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 400px;
+            width: 100%;
+            margin: 0 2rem;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--line2);
+            border-radius: 40px;
+            padding: 0.7rem 1.2rem 0.7rem 3rem;
+            color: var(--white);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: var(--red);
+            background: rgba(255, 59, 75, 0.05);
+            box-shadow: 0 0 20px rgba(255, 59, 75, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* ─── SEARCH RESULTS DROPDOWN ─────────────────────────── */
+        .search-results {
+            position: absolute;
+            top: calc(100% + 12px);
+            left: 0;
+            width: 100%;
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--line2);
+            border-radius: 16px;
+            max-height: 420px;
+            overflow-y: auto;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s var(--ease);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+
+        .search-results.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--line);
+            transition: background 0.2s;
+        }
+
+        .result-item:last-child { border-bottom: none; }
+
+        .result-item:hover {
+            background: rgba(255, 59, 75, 0.08);
+        }
+
+        .result-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--line2);
+        }
+
+        .result-info h4 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 0.85rem;
+            color: var(--white);
+            margin-bottom: 4px;
+        }
+
+        .result-info p {
+            font-size: 0.7rem;
+            color: var(--muted);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover { color: var(--red); }
+
+        /* ─── WRAPPERS ───────────────────────────────────────────── */
+        .wrap {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        header { padding-top: 160px; padding-bottom: 60px; }
+
+        .label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--red);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+        }
+
+        .label::before { content: ''; width: 35px; height: 1px; background: var(--red); }
+
+        /* ─── LATEST SECTION ───────────────────────────────────── */
+        .latest-sec { margin-bottom: 10rem; }
+
+        .latest-card {
+            display: grid;
+            grid-template-columns: 1.3fr 0.7fr;
+            background: var(--off);
+            border: 1px solid var(--line2);
+            border-radius: 30px;
+            overflow: hidden;
+            transition: transform 0.5s var(--ease), border-color 0.5s var(--ease);
+        }
+
+        .latest-card:hover { border-color: var(--red); transform: translateY(-10px); }
+
+        .latest-img { height: 500px; overflow: hidden; }
+        .latest-img img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; transition: transform 0.8s var(--ease); }
+        .latest-card:hover .latest-img img { transform: scale(1.05); opacity: 0.9; }
+
+        .latest-content { padding: 4.5rem; display: flex; flex-direction: column; justify-content: center; }
+        .latest-title { font-family: 'Unbounded', sans-serif; font-size: 2.5rem; color: var(--white); margin-bottom: 2rem; line-height: 1.1; }
+        .latest-desc { font-size: 1.1rem; color: var(--muted); line-height: 1.6; margin-bottom: 3rem; }
+
+        .btn {
+            display: inline-flex;
+            padding: 1.2rem 2.5rem;
+            border: 1px solid var(--line2);
+            color: var(--white);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            width: fit-content;
+        }
+
+        .btn:hover { background: var(--red); border-color: var(--red); color: var(--black); }
+
+        /* ─── FEATURED FOCUS GALLERY ───────────────────────────── */
+        .featured-sec {
+            padding: 10rem 0;
+            background: radial-gradient(circle at center, rgba(255,59,75,0.04) 0%, transparent 70%);
+            overflow: hidden;
+        }
+
+        .gallery-wrap {
+            height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+        }
+
+        .gallery-container {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gallery-item {
+            position: absolute;
+            width: 340px;
+            height: 460px;
+            background: var(--off);
+            border: 1px solid var(--line2);
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.7s var(--ease);
+            opacity: 0;
+            z-index: 1;
+            transform: scale(0.6);
+            pointer-events: none;
+        }
+
+        .gallery-item.active {
+            opacity: 1;
+            transform: scale(1);
+            z-index: 10;
+            border-color: var(--red);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 10px 30px rgba(255,59,75,0.1);
+            pointer-events: all;
+        }
+
+        .gallery-item.prev {
+            opacity: 0.4;
+            transform: translateX(-380px) scale(0.8);
+            z-index: 5;
+            pointer-events: all;
+            cursor: pointer;
+        }
+
+        .gallery-item.next {
+            opacity: 0.4;
+            transform: translateX(380px) scale(0.8);
+            z-index: 5;
+            pointer-events: all;
+            cursor: pointer;
+        }
+
+        .gallery-item img { width: 100%; height: 220px; object-fit: cover; filter: grayscale(0.5); transition: 0.5s; }
+        .gallery-item.active img { filter: grayscale(0); }
+
+        .gallery-item-content { padding: 2.2rem; flex: 1; display: flex; flex-direction: column; gap: 1.2rem; }
+        .gallery-item-content h3 { font-family: 'Unbounded', sans-serif; font-size: 1.2rem; color: var(--white); }
+        .gallery-item-content p { font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+
+        .gallery-controls {
+            position: absolute;
+            bottom: -80px;
+            display: flex;
+            gap: 25px;
+            z-index: 100;
+        }
+
+        .gal-btn {
+            width: 60px;
+            height: 60px;
+            border: 1px solid var(--line2);
+            background: var(--off);
+            color: var(--white);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            font-size: 1.3rem;
+        }
+
+        .gal-btn:hover { border-color: var(--red); color: var(--red); background: var(--grey1); }
+
+        /* ─── GRID SECTION ───────────────────────────────────── */
+        .grid-sec { padding-bottom: 12rem; }
+        .section-header { margin-bottom: 5rem; }
+        .section-header h2 { font-family: 'Unbounded', sans-serif; font-size: 3rem; color: var(--white); text-transform: uppercase; }
+
+        .blog-grid {
+            column-count: 3;
+            column-gap: 40px;
+            width: 100%;
+        }
+
+        .blog-card {
+            background: var(--off);
+            border: 1px solid var(--line2);
+            border-radius: 20px;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            transition: all 0.3s var(--ease);
+            position: relative;
+            margin-bottom: 32px;
+            break-inside: avoid;
+            overflow: hidden;
+            transition: all 0.4s var(--ease);
+        }
+
+        .blog-card:hover { border-color: var(--red); transform: translateY(-8px); }
+
+        .card-img { height: 240px; overflow: hidden; }
+        .card-img img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: transform 0.6s var(--ease); }
+        .blog-card:hover .card-img img { transform: scale(1.08); opacity: 1; }
+
+        .card-body { padding: 2.5rem; display: flex; flex-direction: column; gap: 1.2rem; }
+        .date { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--red); }
+        .blog-card h3 { font-family: 'Unbounded', sans-serif; font-size: 1.3rem; color: var(--white); line-height: 1.3; }
+        .blog-card p { font-size: 0.95rem; color: var(--muted); line-height: 1.7; }
+
+        .read-more {
+            margin-top: 1rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+        }
+        .read-more::after { content: '→'; transition: transform 0.3s; }
+        .blog-card:hover .read-more::after { transform: translateX(5px); }
+
+        /* ─── ANIMATIONS ────────────────────────────────────────── */
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 1s var(--ease); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* ─── RESPONSIVE ────────────────────────────────────────── */
+        @media (max-width: 1100px) { .blog-grid { column-count: 2; } }
+        @media (max-width: 900px) {
+            .latest-card { grid-template-columns: 1fr; }
+            .latest-img { height: 350px; }
+            nav { padding: 0 2rem; }
+            .nav-links { display: none; }
+            .gallery-item.prev { transform: translateX(-260px) scale(0.85); }
+            .gallery-item.next { transform: translateX(260px) scale(0.85); }
+        }
+        @media (max-width: 650px) {
+            .blog-grid { column-count: 1; }
+            .gallery-item.prev, .gallery-item.next { display: none; }
+            .latest-title { font-size: 2rem; }
+            .search-container { display: none; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-logo">R3DEX<em style="color: var(--red);">BLOG</em></div>
+        <div class="search-container">
+            <input type="text" class="search-input" id="blog-search" placeholder="Search insights...">
+            <div id="search-results" class="search-results"></div>
+        </div>
+        <ul class="nav-links">
+            <li><a href="../r3dex_main/index.html">Home</a></li>
+            <li><a href="writeups/index.html">Writeups</a></li>
+            <li><a href="#" style="color: var(--red);">Blog</a></li>
+        </ul>
+    </nav>
+
+    <div class="wrap">
+        <header>
+            <div class="label reveal">Latest Insights</div>
+        </header>
+
+        <section class="latest-sec">
+            <a href="post/zerotrust-arch/index.html" class="latest-card reveal">
+                <div class="latest-img">
+                    <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1200" alt="Zero Trust">
+                </div>
+                <div class="latest-content">
+                    <h1 class="latest-title">The Rise of Zero Trust Architecture</h1>
+                    <p class="latest-desc">Explore how modern enterprises are adapting to shifting threat landscapes by implementing identity-centric security models.</p>
+                    <div class="btn">Read Article</div>
+                </div>
+            </a>
+        </section>
+
+        <section class="featured-sec reveal">
+            <div class="section-header" style="text-align: center;">
+                <div class="label" style="justify-content: center;">Collections</div>
+                <h2 style="font-size: 3.5rem;">Featured Series</h2>
+            </div>
+            
+            <div class="gallery-wrap">
+                <div class="gallery-container" id="gallery">
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=600" alt="Featured 1">
+                        <div class="gallery-item-content">
+                            <h3>Quantum Tech</h3>
+                            <p>Pre-emptive security for the post-quantum era.</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1614064641935-3bb7518b2c5f?auto=format&fit=crop&q=80&w=600" alt="Featured 2">
+                        <div class="gallery-item-content">
+                            <h3>Full-Stack Sec</h3>
+                            <p>Integrating security into modern development.</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1555949963-aa29a3a8d4b1?auto=format&fit=crop&q=80&w=600" alt="Featured 3">
+                        <div class="gallery-item-content">
+                            <h3>Red Teaming</h3>
+                            <p>Think like an attacker to build better defenses.</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=600" alt="Featured 4">
+                        <div class="gallery-item-content">
+                            <h3>Malware Lab</h3>
+                            <p>Deconstructing advanced persistent threats.</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1510511459019-5dee99c4a6ae?auto=format&fit=crop&q=80&w=600" alt="Featured 5">
+                        <div class="gallery-item-content">
+                            <h3>Forensics</h3>
+                            <p>Tracing digital footprints after a breach.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="gallery-controls">
+                    <button class="gal-btn" id="prev-gal">←</button>
+                    <button class="gal-btn" id="next-gal">→</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid-sec">
+            <div class="section-header reveal">
+                <div class="label">Archive</div>
+                <h2>Explore All Posts</h2>
+            </div>
+            
+            <div id="no-results" style="display: none; text-align: center; padding: 6rem; color: var(--muted); font-family: 'IBM Plex Mono', monospace;">
+                NO RESULTS FOUND.
+            </div>
+
+            <div class="blog-grid" id="blog-grid">
+                <a href="post/hashcat-mode-tool/index.html" class="blog-card reveal">
+                    <div class="card-img"><img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=800" alt="Hashcat Tool"></div>
+                    <div class="card-body">
+                        <span class="date">OCT 30, 2026</span>
+                        <h3>Hashcat Made Finding Modes Harder, So I Built a Tool to Fix It</h3>
+                        <p>Streamline your password cracking workflow with a dedicated Hash Identification Tool for both CLI and Web.</p>
+                        <div class="read-more">Read More</div>
+                    </div>
+                </a>
+
+                <a href="post/ransomware-prevention/index.html" class="blog-card reveal">
+                    <div class="card-img"><img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=800" alt="Ransomware"></div>
+                    <div class="card-body">
+                        <span class="date">OCT 24, 2026</span>
+                        <h3>Ransomware Strategies</h3>
+                        <p>New detection methods and recovery protocols for critical systems.</p>
+                        <div class="read-more">Read More</div>
+                    </div>
+                </a>
+
+                <a href="post/cloud-security-best-practices/index.html" class="blog-card reveal">
+                    <div class="card-img"><img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800" alt="Cloud Security"></div>
+                    <div class="card-body">
+                        <span class="date">OCT 20, 2026</span>
+                        <h3>Azure Best Practices</h3>
+                        <p>A deep dive into IAM and network security in the cloud.</p>
+                        <div class="read-more">Read More</div>
+                    </div>
+                </a>
+
+                <a href="post/adversarial-ai/index.html" class="blog-card reveal">
+                    <div class="card-img"><img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800" alt="Adversarial AI"></div>
+                    <div class="card-body">
+                        <span class="date">OCT 15, 2026</span>
+                        <h3>Adversarial AI Threats</h3>
+                        <p>How attackers use ML to bypass traditional filters.</p>
+                        <div class="read-more">Read More</div>
+                    </div>
+                </a>
+
+                <a href="post/iot-vulnerabilities/index.html" class="blog-card reveal">
+                    <div class="card-img"><img src="https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?auto=format&fit=crop&q=80&w=800" alt="IoT Security"></div>
+                    <div class="card-body">
+                        <span class="date">OCT 08, 2026</span>
+                        <h3>Industrial IoT Risk</h3>
+                        <p>Analyzing weak points in edge devices and legacy hardware.</p>
+                        <div class="read-more">Read More</div>
+                    </div>
+                </a>
+
+                <a href="post/phishing-trends/index.html" class="blog-card reveal">
+                    <div class="card-img"><img src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&q=80&w=800" alt="Phishing"></div>
+                    <div class="card-body">
+                        <span class="date">OCT 01, 2026</span>
+                        <h3>Beyond Email Phishing</h3>
+                        <p>Social engineering moving to Deepfake audio and messaging.</p>
+                        <div class="read-more">Read More</div>
+                    </div>
+                </a>
+
+                 <a href="post/blockchain-security/index.html" class="blog-card reveal">
+                    <div class="card-img"><img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=800" alt="Blockchain"></div>
+                    <div class="card-body">
+                        <span class="date">SEP 25, 2026</span>
+                        <h3>Blockchain Defense</h3>
+                        <p>Smart contract audits and decentralized ledger logic.</p>
+                        <div class="read-more">Read More</div>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Reveal Logic
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // ─── SEARCH & RESULTS LOGIC ─────────────────────────────
+        const searchInput = document.getElementById('blog-search');
+        const resultsBox = document.getElementById('search-results');
+        const blogCards = document.querySelectorAll('.blog-card');
+
+        // Extract blog data from cards for searching
+        const blogData = Array.from(blogCards).map(card => ({
+            title: card.querySelector('h3').textContent,
+            desc: card.querySelector('p').textContent,
+            link: card.getAttribute('href'),
+            date: card.querySelector('.date').textContent,
+            img: card.querySelector('img').src
+        }));
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            resultsBox.innerHTML = '';
+
+            if (query.length < 2) {
+                resultsBox.classList.remove('active');
+                return;
+            }
+
+            const matches = blogData.filter(blog => 
+                blog.title.toLowerCase().includes(query) || 
+                blog.desc.toLowerCase().includes(query)
+            );
+
+            if (matches.length > 0) {
+                matches.forEach(match => {
+                    const div = document.createElement('a');
+                    div.href = match.link;
+                    div.className = 'result-item';
+                    div.innerHTML = `
+                        <img src="${match.img}" class="result-img">
+                        <div class="result-info">
+                            <h4>${match.title}</h4>
+                            <p>${match.date}</p>
+                        </div>
+                    `;
+                    resultsBox.appendChild(div);
+                });
+                resultsBox.classList.add('active');
+            } else {
+                resultsBox.innerHTML = `<div style="padding: 1.5rem; text-align: center; color: var(--muted); font-size: 0.8rem;">No matches found.</div>`;
+                resultsBox.classList.add('active');
+            }
+        });
+
+        // Close search on click away
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !resultsBox.contains(e.target)) {
+                resultsBox.classList.remove('active');
+            }
+        });
+
+        // Focus Gallery Logic
+        const items = document.querySelectorAll('.gallery-item');
+        const prevBtn = document.getElementById('prev-gal');
+        const nextBtn = document.getElementById('next-gal');
+        let currentIdx = 0;
+        const totalItems = items.length;
+
+        const updateGal = () => {
+            items.forEach((item, idx) => {
+                item.classList.remove('active', 'prev', 'next');
+                if (idx === currentIdx) item.classList.add('active');
+                else if (idx === (currentIdx - 1 + totalItems) % totalItems) item.classList.add('prev');
+                else if (idx === (currentIdx + 1) % totalItems) item.classList.add('next');
+            });
+        };
+
+        const goNext = () => { currentIdx = (currentIdx + 1) % totalItems; updateGal(); };
+        const goPrev = () => { currentIdx = (currentIdx - 1 + totalItems) % totalItems; updateGal(); };
+
+        nextBtn.addEventListener('click', goNext);
+        prevBtn.addEventListener('click', goPrev);
+        items.forEach((item, idx) => item.addEventListener('click', () => { currentIdx = idx; updateGal(); }));
+
+        let timer = setInterval(goNext, 6000);
+        document.querySelector('.featured-sec').addEventListener('mouseenter', () => clearInterval(timer));
+        document.querySelector('.featured-sec').addEventListener('mouseleave', () => timer = setInterval(goNext, 6000));
+
+        updateGal();
+    </script>
+</body>
+</html>

