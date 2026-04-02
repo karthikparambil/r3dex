@@ -6,12 +6,13 @@ from datetime import datetime
 app = Flask(__name__)
 
 # In-memory data (Core requirement: No database)
-CHALLENGES = {
+CHALLENGES = {#--------machines--------#
     "Omni": {"flag": "r3dx{omni_user_flag}", "root_flag": "r3dx{omni_root_flag}", "is_machine": True},
     "Spectre": {"flag": "r3dx{spectre_user_flag}", "root_flag": "r3dx{spectre_root_flag}", "is_machine": True},
-    "Cloud-Break": {"flag": "r3dx{cloud_break_solved}", "is_machine": False},
-    "Kernel-Panic": {"flag": "r3dx{kernel_panic_solved}", "is_machine": False},
-    "SQL-Inject-01": {"flag": "r3dx{sql_injection_master}", "is_machine": False},
+    "Skulllock": {"flag": "r3dx{midnight_walk}", "is_machine": False},#--------challenges-------#
+    "phantomfest": {"flag": "r3dx{crypt_k33p3r}", "is_machine": False},
+    "secret note": {"flag": "r3dx{j4ck_sk3ll1ngt0n_l0v3s_h4ll0w33n}", "is_machine": False},
+    "ghost mansion": {"flag": "r3dx{h4un73d_m4ns10n_gh0s7_m4s73r}", "is_machine": False},
 }
 
 CREATORS = [
@@ -20,7 +21,7 @@ CREATORS = [
         "name": "Karthik",
         "profile_link": "https://github.com/karthikparambil",
         "bio": "Pentester, CTF Enthusiast and Developer.",
-        "challenges": ["Omni", "Spectre"]
+        "challenges": ["skulllock", "secret note", "phantomfest", "ghost mansion"]
     },
     {
         "username": "mxshub",

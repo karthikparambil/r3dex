@@ -618,7 +618,7 @@
       transform: translateY(40px) scale(0.95);
       transition: all 0.4s var(--ease);
     }
-    
+
     .modal-overlay.open {
       opacity: 1;
       visibility: visible;
@@ -710,7 +710,7 @@
       transform: translateY(30px) scale(0.98);
       transition: all 0.4s var(--ease);
     }
-    
+
     .modal-overlay.open .ov-inner {
       transform: translateY(0) scale(1);
     }
@@ -1090,14 +1090,6 @@
     #search-results {
       animation: slideDown 0.3s var(--ease);
     }
-
-    .modal-overlay.open {
-      /* Replaced by transition */
-    }
-
-    .modal-overlay.open .ov-inner {
-      /* Replaced by transition */
-    }
   </style>
 </head>
 
@@ -1280,11 +1272,10 @@
           <label>Category</label>
           <select class="filter-select" id="challenge-filter-cat" onchange="applyFilters('challenges')">
             <option value="all">All Categories</option>
-            <option value="Cloud">Cloud Security</option>
-            <option value="Pwn">Pwnable</option>
             <option value="Web">Web Exploitation</option>
             <option value="Reverse">Reverse Engineering</option>
             <option value="Crypto">Cryptography</option>
+            <option value="Forensics">Forensics</option>
           </select>
         </div>
         <div class="filter-group">
@@ -1302,99 +1293,67 @@
         <div class="section-label">Latest Challenges</div>
         <div class="machines-list" style="margin-top: 1.5rem;">
           <!-- Featured Challenge 1 -->
-          <div class="mc-row latest" data-type="challenge" data-difficulty="Medium" data-category="Cloud"
+          <div class="mc-row latest" data-type="challenge" data-difficulty="Easy" data-category="Web"
             style="--card-accent: var(--yellow); --card-glow: var(--yellow-glow);">
             <div class="row-logo">
-              <img
-                src="file:///home/karthik/.gemini/antigravity/brain/444ca247-53e8-4a27-b764-1b162f0484bb/logo_cloudbreak_1774602608623.png"
-                alt="Cloud-Break Logo">
+              <img src="#" alt="logo">
             </div>
             <div class="row-main">
-              <div class="mc-difficulty">Medium</div>
-              <h3 class="mc-name">Cloud-Break</h3>
-              <div class="mc-tags"><span class="mc-tag">Cloud Security</span></div>
+              <div class="mc-difficulty">Easy</div>
+              <h3 class="mc-name">Skulllock</h3>
+              <div class="mc-tags"><span class="mc-tag">Web</span></div>
             </div>
             <div class="row-side">
-              <div class="mc-cta">Solve <i data-lucide="arrow-right" style="width:16px;"></i></div>
+              <div class="mc-cta">Solve<i data-lucide="arrow-right" style="width:16px;"></i></div>
             </div>
           </div>
 
-          <!-- Featured Challenge 2 -->
-          <div class="mc-row latest" data-type="challenge" data-difficulty="Hard" data-category="Pwn"
-            style="--card-accent: var(--red); --card-glow: var(--red-glow);">
-            <div class="row-logo">
-              <img
-                src="file:///home/karthik/.gemini/antigravity/brain/444ca247-53e8-4a27-b764-1b162f0484bb/logo_kernelpanic_1774602663445.png"
-                alt="Kernel-Panic Logo">
-            </div>
-            <div class="row-main">
-              <div class="mc-difficulty">Hard</div>
-              <h3 class="mc-name">Kernel-Panic</h3>
-              <div class="mc-tags"><span class="mc-tag">Pwnable</span></div>
-            </div>
-            <div class="row-side">
-              <div class="mc-cta">Solve <i data-lucide="arrow-right" style="width:16px;"></i></div>
-            </div>
-          </div>
-        </div>
+
       </div>
 
       <div class="machines-list">
-        <!-- Challenge 1 -->
+        <!-- Challenge 0: Phantomfest -->
         <div class="mc-row" data-type="challenge" data-difficulty="Easy" data-category="Web"
           style="--card-accent: var(--green); --card-glow: var(--green-glow);">
           <div class="row-logo"><i data-lucide="globe"></i></div>
           <div class="row-main">
             <div class="mc-difficulty">Easy</div>
-            <h3 class="mc-name">SQL-Inject-01</h3>
-            <div class="mc-tags"><span class="mc-tag">Web Exploitation</span></div>
+            <h3 class="mc-name">phantomfest</h3>
+            <div class="mc-tags"><span class="mc-tag">Web</span></div>
           </div>
           <div class="row-side">
             <div class="mc-cta">Solve <i data-lucide="chevron-right" style="width:14px;"></i></div>
           </div>
         </div>
 
-        <!-- Challenge 2 -->
-        <div class="mc-row" data-type="challenge" data-difficulty="Hard" data-category="Pwn"
-          style="--card-accent: var(--red); --card-glow: var(--red-glow);">
-          <div class="row-logo"><i data-lucide="bomb"></i></div>
+        <!-- Challenge: Secret Note -->
+        <div class="mc-row" data-type="challenge" data-difficulty="Easy" data-category="Web"
+          style="--card-accent: var(--green); --card-glow: var(--green-glow);">
+          <div class="row-logo"><i data-lucide="globe"></i></div>
           <div class="row-main">
-            <div class="mc-difficulty">Hard</div>
-            <h3 class="mc-name">Stack-Smash</h3>
-            <div class="mc-tags"><span class="mc-tag">Pwnable</span></div>
+            <div class="mc-difficulty">Easy</div>
+            <h3 class="mc-name">secret note</h3>
+            <div class="mc-tags"><span class="mc-tag">Web</span></div>
           </div>
           <div class="row-side">
             <div class="mc-cta">Solve <i data-lucide="chevron-right" style="width:14px;"></i></div>
           </div>
         </div>
 
-        <!-- Challenge 3 -->
-        <div class="mc-row" data-type="challenge" data-difficulty="Medium" data-category="Reverse"
+        <!-- Challenge: Ghost Mansion -->
+        <div class="mc-row" data-type="challenge" data-difficulty="Medium" data-category="Web"
           style="--card-accent: var(--yellow); --card-glow: var(--yellow-glow);">
-          <div class="row-logo"><i data-lucide="settings"></i></div>
+          <div class="row-logo"><i data-lucide="globe"></i></div>
           <div class="row-main">
             <div class="mc-difficulty">Medium</div>
-            <h3 class="mc-name">Retro-Rev</h3>
-            <div class="mc-tags"><span class="mc-tag">Reverse Engineering</span></div>
+            <h3 class="mc-name">ghost mansion</h3>
+            <div class="mc-tags"><span class="mc-tag">Web</span></div>
           </div>
           <div class="row-side">
             <div class="mc-cta">Solve <i data-lucide="chevron-right" style="width:14px;"></i></div>
           </div>
         </div>
 
-        <!-- Challenge 4 -->
-        <div class="mc-row" data-type="challenge" data-difficulty="Hard" data-category="Crypto"
-          style="--card-accent: var(--red); --card-glow: var(--red-glow);">
-          <div class="row-logo"><i data-lucide="lock"></i></div>
-          <div class="row-main">
-            <div class="mc-difficulty">Hard</div>
-            <h3 class="mc-name">Bit-Flipper</h3>
-            <div class="mc-tags"><span class="mc-tag">Cryptography</span></div>
-          </div>
-          <div class="row-side">
-            <div class="mc-cta">Solve <i data-lucide="chevron-right" style="width:14px;"></i></div>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -1507,10 +1466,12 @@
       localStorage.setItem('activeTab', tabId);
     }
 
-    function openModal(name, diff, cat, imgSrc, isMachine) {
+    function openModal(name, diff, cat, desc, imgSrc, isMachine, author) {
       document.getElementById('modal-title').innerText = name;
       document.getElementById('modal-cat').innerText = cat;
       document.getElementById('modal-info-diff').innerText = diff;
+      document.getElementById('modal-desc').innerText = desc;
+      document.getElementById('modal-author').innerHTML = `<a href="#" style="color: var(--blue);">@${author}</a>`;
 
       const banner = document.getElementById('modal-banner');
       if (imgSrc) {
@@ -1556,11 +1517,40 @@
           // Fallback detection: if closest fails, check category
           const isMachine = !!card.closest('#machines') || (cat === 'Windows' || cat === 'Linux');
 
+          const descriptions = {//machines
+            "Omni": "Breach the external perimeter and pivot through multiple internal systems to achieve domain dominance.",
+            "Spectre": "Trace the shadows in a highly fortified Linux environment. Exploit advanced memory corruption vulnerabilities.",
+            "Basics": "A gentle introduction to basic Linux administration and fundamental exploitation.",
+            "Vault": "Bypass rigid Windows access controls and secure enclave mechanisms.",
+            "Ghost": "Infiltrate a heavily monitored network without raising alarms. A pure stealth exercise.",
+            "Nebula": "Navigate through containerized environments and exploit orchestration misconfigurations.",
+            "Skulllock": "Not all doors are locked some just need the right story to open. Trace the clues, find the hidden route, and prove your origin.",
+            "phantomfest": "Not everything is visible at first glance. Follow hidden paths, uncover secrets and manipulate what the system trusts to gain access. note: run using apache",
+            "secret note": "A simple note-taking… or is it?\nSome things aren’t meant for your eyes unless you know where to look.",
+            "ghost mansion": "Authentication is just the beginning. The real path lies beyond what is shown."
+          };
+          const desc = descriptions[name] || card.getAttribute('data-description') || 'Acquire system access by identifying and exploiting misconfigurations in the target environment.';
+
+          const authors = {
+            "Omni": "r3dex",
+            "Spectre": "r3dex",
+            "Basics": "0xHUB_Admin",
+            "Vault": "0xHUB_Admin",
+            "Ghost": "0xHUB_Admin",
+            "Nebula": "0xHUB_Admin",
+            "Skulllock": "r3dex",
+            "Cloud-Break": "mxshub",
+            "phantomfest": "r3dex",
+            "secret note": "r3dex",
+            "ghost mansion": "r3dex"
+          };
+          const author = authors[name] || card.getAttribute('data-author') || "0xHUB_Admin";
+
           let imgSrc = '';
           const imgEl = card.querySelector('img');
           if (imgEl) imgSrc = imgEl.src;
 
-          openModal(name, diff, cat, imgSrc, isMachine);
+          openModal(name, diff, cat, desc, imgSrc, isMachine, author);
         });
       });
     });
