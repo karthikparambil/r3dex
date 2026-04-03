@@ -1159,6 +1159,38 @@
       <div class="latest-section">
         <div class="section-label">Latest Machines</div>
         <div class="machines-list" style="margin-top: 1.5rem;">
+          <!-- Featured Machine (Mission Space) -->
+          <div class="mc-row latest" data-type="machine" data-difficulty="Easy" data-category="Linux"
+            style="--card-accent: #6366f1; --card-glow: rgba(99, 102, 241, 0.3);">
+            <div class="row-logo"><i data-lucide="satellite" style="width:32px; height:32px; color: #6366f1;"></i></div>
+            <div class="row-main">
+              <div class="mc-difficulty">Easy</div>
+              <h3 class="mc-name">Mission Space</h3>
+              <div class="mc-tags"><span class="mc-tag">Linux</span></div>
+            </div>
+            <div class="row-side">
+              <div class="mc-cta">Explore <i data-lucide="arrow-right" style="width:16px;"></i></div>
+            </div>
+          </div>
+
+          <!-- Featured Machine (Mission Escape) -->
+          <div class="mc-row latest" data-type="machine" data-difficulty="Easy" data-category="Linux"
+            style="--card-accent: var(--orange); --card-glow: var(--orange-glow);">
+            <div class="row-logo">
+              <img
+                src="file:///home/karthik/.gemini/antigravity/brain/4dda91b4-cdf8-4a7d-bccd-31008c87fe67/mission_escape_logo_1775190073430.png"
+                alt="Mission Escape Logo">
+            </div>
+            <div class="row-main">
+              <div class="mc-difficulty">Easy</div>
+              <h3 class="mc-name">Mission Escape</h3>
+              <div class="mc-tags"><span class="mc-tag">Linux</span></div>
+            </div>
+            <div class="row-side">
+              <div class="mc-cta">Explore <i data-lucide="arrow-right" style="width:16px;"></i></div>
+            </div>
+          </div>
+
           <!-- Featured Machine 1 -->
           <div class="mc-row latest" data-type="machine" data-difficulty="Easy" data-category="Windows"
             style="--card-accent: var(--green); --card-glow: var(--green-glow);">
@@ -1518,6 +1550,8 @@
           const isMachine = !!card.closest('#machines') || (cat === 'Windows' || cat === 'Linux');
 
           const descriptions = {//machines
+            "Mission Space": "Mission: Space is a space-themed vulnerable machine designed for penetration testing. Launch your attack, exploit intentional vulnerabilities, and hack your way to root before you float adrift!",
+            "Mission Escape": "Mission: Escape is a prison break-themed vulnerable machine. Put your offensive security skills to the test, exploit intentional weaknesses, and hack your way to freedom!",
             "Omni": "Breach the external perimeter and pivot through multiple internal systems to achieve domain dominance.",
             "Spectre": "Trace the shadows in a highly fortified Linux environment. Exploit advanced memory corruption vulnerabilities.",
             "Basics": "A gentle introduction to basic Linux administration and fundamental exploitation.",
@@ -1532,6 +1566,8 @@
           const desc = descriptions[name] || card.getAttribute('data-description') || 'Acquire system access by identifying and exploiting misconfigurations in the target environment.';
 
           const authors = {
+            "Mission Space": "r3dex",
+            "Mission Escape": "r3dex",
             "Omni": "r3dex",
             "Spectre": "r3dex",
             "Basics": "0xHUB_Admin",
