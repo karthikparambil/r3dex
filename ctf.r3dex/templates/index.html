@@ -562,7 +562,7 @@
 
     /* Latest Section */
     .latest-section {
-      margin-bottom: 3.5rem;
+      margin-bottom: 1.5rem;
     }
 
     .section-label {
@@ -1082,13 +1082,28 @@
       }
     }
 
-    .mc,
-    .mc-row {
-      animation: popIn 0.4s var(--ease);
+    /* ─── DUAL LATEST ─── */
+    .dual-latest-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
     }
 
-    #search-results {
-      animation: slideDown 0.3s var(--ease);
+    .dual-latest-row .mc-row.latest {
+      margin-top: 0 !important;
+      flex: 1;
+    }
+
+    .section-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .section-header-row .section-label {
+      margin: 0;
     }
   </style>
 </head>
@@ -1159,49 +1174,13 @@
       <div class="latest-section">
         <div class="section-label">Latest Machines</div>
         <div class="machines-list" style="margin-top: 1.5rem;">
-          <!-- Featured Machine (Mission Space) -->
-          <div class="mc-row latest" data-type="machine" data-difficulty="Easy" data-category="Linux"
-            style="--card-accent: #6366f1; --card-glow: rgba(99, 102, 241, 0.3);">
-            <div class="row-logo"><i data-lucide="satellite" style="width:32px; height:32px; color: #6366f1;"></i></div>
-            <div class="row-main">
-              <div class="mc-difficulty">Easy</div>
-              <h3 class="mc-name">Mission Space</h3>
-              <div class="mc-tags"><span class="mc-tag">Linux</span></div>
-            </div>
-            <div class="row-side">
-              <div class="mc-cta">Explore <i data-lucide="arrow-right" style="width:16px;"></i></div>
-            </div>
-          </div>
-
-          <!-- Featured Machine (Mission Escape) -->
-          <div class="mc-row latest" data-type="machine" data-difficulty="Easy" data-category="Linux"
-            style="--card-accent: var(--orange); --card-glow: var(--orange-glow);">
-            <div class="row-logo">
-              <img
-                src="file:///home/karthik/.gemini/antigravity/brain/4dda91b4-cdf8-4a7d-bccd-31008c87fe67/mission_escape_logo_1775190073430.png"
-                alt="Mission Escape Logo">
-            </div>
-            <div class="row-main">
-              <div class="mc-difficulty">Easy</div>
-              <h3 class="mc-name">Mission Escape</h3>
-              <div class="mc-tags"><span class="mc-tag">Linux</span></div>
-            </div>
-            <div class="row-side">
-              <div class="mc-cta">Explore <i data-lucide="arrow-right" style="width:16px;"></i></div>
-            </div>
-          </div>
-
-          <!-- Featured Machine 1 -->
+          <!-- Featured Machine (bluescreen) -->
           <div class="mc-row latest" data-type="machine" data-difficulty="Easy" data-category="Windows"
-            style="--card-accent: var(--green); --card-glow: var(--green-glow);">
-            <div class="row-logo">
-              <img
-                src="file:///home/karthik/.gemini/antigravity/brain/444ca247-53e8-4a27-b764-1b162f0484bb/logo_omni_1774602561888.png"
-                alt="Omni Logo">
-            </div>
+            style="--card-accent: var(--blue); --card-glow: var(--blue-glow);">
+            <div class="row-logo"><i data-lucide="monitor" style="width:32px; height:32px; color: var(--blue);"></i></div>
             <div class="row-main">
               <div class="mc-difficulty">Easy</div>
-              <h3 class="mc-name">Omni</h3>
+              <h3 class="mc-name">bluescreen</h3>
               <div class="mc-tags"><span class="mc-tag">Windows</span></div>
             </div>
             <div class="row-side">
@@ -1209,17 +1188,13 @@
             </div>
           </div>
 
-          <!-- Featured Machine 2 -->
-          <div class="mc-row latest" data-type="machine" data-difficulty="Hard" data-category="Linux"
-            style="--card-accent: var(--red); --card-glow: var(--red-glow);">
-            <div class="row-logo">
-              <img
-                src="file:///home/karthik/.gemini/antigravity/brain/444ca247-53e8-4a27-b764-1b162f0484bb/logo_spectre_1774602593408.png"
-                alt="Spectre Logo">
-            </div>
+          <!-- Featured Machine (wp-root) -->
+          <div class="mc-row latest" data-type="machine" data-difficulty="Easy" data-category="Linux"
+            style="--card-accent: var(--blue); --card-glow: var(--blue-glow);">
+            <div class="row-logo"><i data-lucide="server" style="width:32px; height:32px; color: var(--blue);"></i></div>
             <div class="row-main">
-              <div class="mc-difficulty">Hard</div>
-              <h3 class="mc-name">Spectre</h3>
+              <div class="mc-difficulty">Easy</div>
+              <h3 class="mc-name">wp-root</h3>
               <div class="mc-tags"><span class="mc-tag">Linux</span></div>
             </div>
             <div class="row-side">
@@ -1230,17 +1205,31 @@
       </div>
 
       <div class="machines-list">
-        <!-- Machine 1 -->
+        <!-- Machine: Mission Space -->
         <div class="mc-row" data-type="machine" data-difficulty="Easy" data-category="Linux"
-          style="--card-accent: var(--green); --card-glow: var(--green-glow);">
+          style="--card-accent: #6366f1; --card-glow: rgba(99, 102, 241, 0.3);">
+          <div class="row-logo"><i data-lucide="satellite"></i></div>
+          <div class="row-main">
+            <div class="mc-difficulty">Easy</div>
+            <h3 class="mc-name">Mission Space</h3>
+            <div class="mc-tags"><span class="mc-tag">Linux</span></div>
+          </div>
+          <div class="row-side">
+            <div class="mc-cta">Explore <i data-lucide="chevron-right" style="width:14px;"></i></div>
+          </div>
+        </div>
+
+        <!-- Machine: Mission Escape -->
+        <div class="mc-row" data-type="machine" data-difficulty="Easy" data-category="Linux"
+          style="--card-accent: var(--orange); --card-glow: var(--orange-glow);">
           <div class="row-logo">
             <img
-              src="file:///home/karthik/.gemini/antigravity/brain/444ca247-53e8-4a27-b764-1b162f0484bb/logo_basics_1774602707476.png"
-              alt="Basics Logo">
+              src="file:///home/karthik/.gemini/antigravity/brain/4dda91b4-cdf8-4a7d-bccd-31008c87fe67/mission_escape_logo_1775190073430.png"
+              alt="Mission Escape Logo">
           </div>
           <div class="row-main">
             <div class="mc-difficulty">Easy</div>
-            <h3 class="mc-name">Basics</h3>
+            <h3 class="mc-name">Mission Escape</h3>
             <div class="mc-tags"><span class="mc-tag">Linux</span></div>
           </div>
           <div class="row-side">
@@ -1248,45 +1237,27 @@
           </div>
         </div>
 
-        <!-- Machine 2 -->
-        <div class="mc-row" data-type="machine" data-difficulty="Medium" data-category="Windows"
-          style="--card-accent: var(--yellow); --card-glow: var(--yellow-glow);">
-          <div class="row-logo">
-            <img
-              src="file:///home/karthik/.gemini/antigravity/brain/444ca247-53e8-4a27-b764-1b162f0484bb/logo_vault_1774602789083.png"
-              alt="Vault Logo">
-          </div>
-          <div class="row-main">
-            <div class="mc-difficulty">Medium</div>
-            <h3 class="mc-name">Vault</h3>
-            <div class="mc-tags"><span class="mc-tag">Windows</span></div>
-          </div>
-          <div class="row-side">
-            <div class="mc-cta">Explore <i data-lucide="chevron-right" style="width:14px;"></i></div>
-          </div>
-        </div>
-
-        <!-- Machine 3 -->
-        <div class="mc-row" data-type="machine" data-difficulty="Hard" data-category="Linux"
-          style="--card-accent: var(--red); --card-glow: var(--red-glow);">
-          <div class="row-logo"><i data-lucide="terminal"></i></div>
-          <div class="row-main">
-            <div class="mc-difficulty">Hard</div>
-            <h3 class="mc-name">Ghost</h3>
-            <div class="mc-tags"><span class="mc-tag">Linux</span></div>
-          </div>
-          <div class="row-side">
-            <div class="mc-cta">Explore <i data-lucide="chevron-right" style="width:14px;"></i></div>
-          </div>
-        </div>
-
-        <!-- Machine 4 -->
+        <!-- Machine 4: Nebula -->
         <div class="mc-row" data-type="machine" data-difficulty="Medium" data-category="Linux"
           style="--card-accent: var(--yellow); --card-glow: var(--yellow-glow);">
           <div class="row-logo"><i data-lucide="terminal"></i></div>
           <div class="row-main">
             <div class="mc-difficulty">Medium</div>
             <h3 class="mc-name">Nebula</h3>
+            <div class="mc-tags"><span class="mc-tag">Linux</span></div>
+          </div>
+          <div class="row-side">
+            <div class="mc-cta">Explore <i data-lucide="chevron-right" style="width:14px;"></i></div>
+          </div>
+        </div>
+
+        <!-- Machine 5: Dark Patch -->
+        <div class="mc-row" data-type="machine" data-difficulty="Easy" data-category="Linux"
+          style="--card-accent: var(--red); --card-glow: var(--red-glow);">
+          <div class="row-logo"><i data-lucide="shield"></i></div>
+          <div class="row-main">
+            <div class="mc-difficulty">Easy</div>
+            <h3 class="mc-name">Dark Patch</h3>
             <div class="mc-tags"><span class="mc-tag">Linux</span></div>
           </div>
           <div class="row-side">
@@ -1339,54 +1310,51 @@
               <div class="mc-cta">Solve<i data-lucide="arrow-right" style="width:16px;"></i></div>
             </div>
           </div>
-
-
+        </div>
       </div>
 
       <div class="machines-list">
         <!-- Challenge 0: Phantomfest -->
-        <div class="mc-row" data-type="challenge" data-difficulty="Easy" data-category="Web"
-          style="--card-accent: var(--green); --card-glow: var(--green-glow);">
-          <div class="row-logo"><i data-lucide="globe"></i></div>
-          <div class="row-main">
-            <div class="mc-difficulty">Easy</div>
-            <h3 class="mc-name">phantomfest</h3>
-            <div class="mc-tags"><span class="mc-tag">Web</span></div>
+          <div class="mc-row" data-type="challenge" data-difficulty="Easy" data-category="Web"
+            style="--card-accent: var(--green); --card-glow: var(--green-glow);">
+            <div class="row-logo"><i data-lucide="globe"></i></div>
+            <div class="row-main">
+              <div class="mc-difficulty">Easy</div>
+              <h3 class="mc-name">phantomfest</h3>
+              <div class="mc-tags"><span class="mc-tag">Web</span></div>
+            </div>
+            <div class="row-side">
+              <div class="mc-cta">Solve <i data-lucide="chevron-right" style="width:14px;"></i></div>
+            </div>
           </div>
-          <div class="row-side">
-            <div class="mc-cta">Solve <i data-lucide="chevron-right" style="width:14px;"></i></div>
-          </div>
-        </div>
 
-        <!-- Challenge: Secret Note -->
-        <div class="mc-row" data-type="challenge" data-difficulty="Easy" data-category="Web"
-          style="--card-accent: var(--green); --card-glow: var(--green-glow);">
-          <div class="row-logo"><i data-lucide="globe"></i></div>
-          <div class="row-main">
-            <div class="mc-difficulty">Easy</div>
-            <h3 class="mc-name">secret note</h3>
-            <div class="mc-tags"><span class="mc-tag">Web</span></div>
+          <!-- Challenge: Secret Note -->
+          <div class="mc-row" data-type="challenge" data-difficulty="Easy" data-category="Web"
+            style="--card-accent: var(--green); --card-glow: var(--green-glow);">
+            <div class="row-logo"><i data-lucide="globe"></i></div>
+            <div class="row-main">
+              <div class="mc-difficulty">Easy</div>
+              <h3 class="mc-name">secret note</h3>
+              <div class="mc-tags"><span class="mc-tag">Web</span></div>
+            </div>
+            <div class="row-side">
+              <div class="mc-cta">Solve <i data-lucide="chevron-right" style="width:14px;"></i></div>
+            </div>
           </div>
-          <div class="row-side">
-            <div class="mc-cta">Solve <i data-lucide="chevron-right" style="width:14px;"></i></div>
-          </div>
-        </div>
 
-        <!-- Challenge: Ghost Mansion -->
-        <div class="mc-row" data-type="challenge" data-difficulty="Medium" data-category="Web"
-          style="--card-accent: var(--yellow); --card-glow: var(--yellow-glow);">
-          <div class="row-logo"><i data-lucide="globe"></i></div>
-          <div class="row-main">
-            <div class="mc-difficulty">Medium</div>
-            <h3 class="mc-name">ghost mansion</h3>
-            <div class="mc-tags"><span class="mc-tag">Web</span></div>
+          <!-- Challenge: Ghost Mansion -->
+          <div class="mc-row" data-type="challenge" data-difficulty="Medium" data-category="Web"
+            style="--card-accent: var(--yellow); --card-glow: var(--yellow-glow);">
+            <div class="row-logo"><i data-lucide="globe"></i></div>
+            <div class="row-main">
+              <div class="mc-difficulty">Medium</div>
+              <h3 class="mc-name">ghost mansion</h3>
+              <div class="mc-tags"><span class="mc-tag">Web</span></div>
+            </div>
+            <div class="row-side">
+              <div class="mc-cta">Solve <i data-lucide="chevron-right" style="width:14px;"></i></div>
+            </div>
           </div>
-          <div class="row-side">
-            <div class="mc-cta">Solve <i data-lucide="chevron-right" style="width:14px;"></i></div>
-          </div>
-        </div>
-
-      </div>
     </section>
 
     <!-- MODAL OVERLAY -->
@@ -1550,13 +1518,11 @@
           const isMachine = !!card.closest('#machines') || (cat === 'Windows' || cat === 'Linux');
 
           const descriptions = {//machines
+            "bluescreen": "none",
+            "wp-root": "none",
             "Mission Space": "Mission: Space is a space-themed vulnerable machine designed for penetration testing. Launch your attack, exploit intentional vulnerabilities, and hack your way to root before you float adrift!",
             "Mission Escape": "Mission: Escape is a prison break-themed vulnerable machine. Put your offensive security skills to the test, exploit intentional weaknesses, and hack your way to freedom!",
-            "Omni": "Breach the external perimeter and pivot through multiple internal systems to achieve domain dominance.",
-            "Spectre": "Trace the shadows in a highly fortified Linux environment. Exploit advanced memory corruption vulnerabilities.",
-            "Basics": "A gentle introduction to basic Linux administration and fundamental exploitation.",
-            "Vault": "Bypass rigid Windows access controls and secure enclave mechanisms.",
-            "Ghost": "Infiltrate a heavily monitored network without raising alarms. A pure stealth exercise.",
+            "Dark Patch": "Dark Patch is a beginner vulnerable lab. Identify an outdated service, exploit a known CVE, and practice Linux privilege escalation in this straightforward boot2root machine.",
             "Nebula": "Navigate through containerized environments and exploit orchestration misconfigurations.",
             "Skulllock": "Not all doors are locked some just need the right story to open. Trace the clues, find the hidden route, and prove your origin.",
             "phantomfest": "Not everything is visible at first glance. Follow hidden paths, uncover secrets and manipulate what the system trusts to gain access. note: run using apache",
@@ -1566,13 +1532,11 @@
           const desc = descriptions[name] || card.getAttribute('data-description') || 'Acquire system access by identifying and exploiting misconfigurations in the target environment.';
 
           const authors = {
+            "bluescreen": "r3dex",
+            "wp-root": "r3dex",
             "Mission Space": "r3dex",
             "Mission Escape": "r3dex",
-            "Omni": "r3dex",
-            "Spectre": "r3dex",
-            "Basics": "0xHUB_Admin",
-            "Vault": "0xHUB_Admin",
-            "Ghost": "0xHUB_Admin",
+            "Dark Patch": "r3dex",
             "Nebula": "0xHUB_Admin",
             "Skulllock": "r3dex",
             "Cloud-Break": "mxshub",

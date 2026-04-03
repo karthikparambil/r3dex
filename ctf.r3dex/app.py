@@ -7,10 +7,11 @@ app = Flask(__name__)
 
 # In-memory data (Core requirement: No database)
 CHALLENGES = {#--------machines--------#
-    "Omni": {"flag": "r3dx{omni_user_flag}", "root_flag": "r3dx{omni_root_flag}", "is_machine": True},
-    "Spectre": {"flag": "r3dx{spectre_user_flag}", "root_flag": "r3dx{spectre_root_flag}", "is_machine": True},
     "Mission Escape": {"flag": "none", "root_flag": "none", "is_machine": True},
     "Mission Space": {"flag": "none", "root_flag": "none", "is_machine": True},
+    "Dark Patch": {"flag": "none", "root_flag": "none", "is_machine": True},
+    "wp-root": {"flag": "none", "root_flag": "none", "is_machine": True},
+    "bluescreen": {"flag": "none", "root_flag": "none", "is_machine": True},
     "Skulllock": {"flag": "r3dx{midnight_walk}", "is_machine": False},#--------challenges-------#
     "phantomfest": {"flag": "r3dx{crypt_k33p3r}", "is_machine": False},
     "secret note": {"flag": "r3dx{j4ck_sk3ll1ngt0n_l0v3s_h4ll0w33n}", "is_machine": False},
@@ -23,7 +24,7 @@ CREATORS = [
         "name": "Karthik",
         "profile_link": "https://github.com/karthikparambil",
         "bio": "Pentester, CTF Enthusiast and Developer.",
-        "challenges": ["skulllock", "secret note", "phantomfest", "ghost mansion", "Mission Escape", "Mission Space"]
+        "challenges": ["skulllock", "secret note", "phantomfest", "ghost mansion", "Mission Escape", "Mission Space", "Dark Patch", "wp-root", "bluescreen"]
     },
     {
         "username": "mxshub",
